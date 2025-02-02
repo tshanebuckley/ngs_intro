@@ -1,0 +1,276 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "version": 1,
+    "install": {
+      "fastqc": {
+        "pkg-path": "fastqc"
+      },
+      "gzip": {
+        "pkg-path": "gzip"
+      }
+    },
+    "hook": {
+      "on-activate": "\n    # Var for a local bin for the flox env\n    LOCAL_FLOX_BIN=$PWD/.flox/lib/.local/bin\n\n    # Add the flox bin to the PATH\n    export PATH=\"$LOCAL_FLOX_BIN:$PATH\"\n\n    # Make the wkg path if it doesn't exist\n    mkdir -p $LOCAL_FLOX_BIN\n\n    # sra-toolkit version\n    SRA_VER=3.2.0\n\n    # sra-toolkit target\n    SRA_TARGET=\"sratoolkit.${SRA_VER}-ubuntu64\"\n\n    # sra-toolkit file name\n    SRA_FILENAME=\"${SRA_TARGET}.tar.gz\"\n\n    # sra-toolkit file\n    SRA_FILE=\"${LOCAL_FLOX_BIN}/${SRA_FILENAME}\"\n\n    # sra-toolkit bin directory\n    SRA_BIN=\"${LOCAL_FLOX_BIN}/${SRA_TARGET}/bin\"\n\n    wget \"https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.2.0/${SRA_FILENAME}\" -O $SRA_FILE &&\n        tar -xvzf $SRA_FILE -C $LOCAL_FLOX_BIN &&\n        rm $SRA_FILE &&\n        export PATH=$SRA_BIN:$PATH\n"
+    },
+    "profile": {},
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "aarch64-linux",
+        "x86_64-darwin",
+        "x86_64-linux"
+      ],
+      "allow": {
+        "licenses": []
+      },
+      "semver": {}
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "fastqc",
+      "broken": false,
+      "derivation": "/nix/store/6j2zbw1xq5wrgml26aznk0md57lh1flx-fastqc-0.12.1.drv",
+      "description": "A quality control application for high throughput sequence data",
+      "install_id": "fastqc",
+      "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "fastqc-0.12.1",
+      "pname": "fastqc",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.12.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/5kikpkhrsbrwxgnzzzkqwwjbkj00z2ca-fastqc-0.12.1"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "fastqc",
+      "broken": false,
+      "derivation": "/nix/store/l5aska44q4xq1zl4fw17l274zggcbw10-fastqc-0.12.1.drv",
+      "description": "A quality control application for high throughput sequence data",
+      "install_id": "fastqc",
+      "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "fastqc-0.12.1",
+      "pname": "fastqc",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.12.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/mly2hsq5bbw7zw7918jg4178q18gh71c-fastqc-0.12.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "fastqc",
+      "broken": false,
+      "derivation": "/nix/store/xd5vh6svjwnbryn3vy56qxxaks6banx5-fastqc-0.12.1.drv",
+      "description": "A quality control application for high throughput sequence data",
+      "install_id": "fastqc",
+      "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "fastqc-0.12.1",
+      "pname": "fastqc",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.12.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/b9gmdprzy973jzdsyzlg1wi7msflzznq-fastqc-0.12.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "fastqc",
+      "broken": false,
+      "derivation": "/nix/store/a5z9l020hlw97yc36a04iqwp39fr0iig-fastqc-0.12.1.drv",
+      "description": "A quality control application for high throughput sequence data",
+      "install_id": "fastqc",
+      "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "fastqc-0.12.1",
+      "pname": "fastqc",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.12.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/9k781kmal9zwafi1lvsby5hipx9qg8lm-fastqc-0.12.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gzip",
+      "broken": false,
+      "derivation": "/nix/store/l7smqyabpasjag950rldbg1dkpr7skaj-gzip-1.13.drv",
+      "description": "GNU zip compression program",
+      "install_id": "gzip",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "gzip-1.13",
+      "pname": "gzip",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.13",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/c8b6j348hgmgnnmb2792byjdv8wapy5f-gzip-1.13-info",
+        "man": "/nix/store/j01fc4qv62gcdhj2isalr186vlc6ggzd-gzip-1.13-man",
+        "out": "/nix/store/h6dg2cxp4j9fs8dmcxshz9sa3f8dcjrh-gzip-1.13"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gzip",
+      "broken": false,
+      "derivation": "/nix/store/lhw0iaxq0bpcbp23zkvw4ff9v1wqkj64-gzip-1.13.drv",
+      "description": "GNU zip compression program",
+      "install_id": "gzip",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "gzip-1.13",
+      "pname": "gzip",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.13",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/ml3658wdv35njkpjpnhmhc1g14wfjca1-gzip-1.13-info",
+        "man": "/nix/store/0s0jcvf4jw538h5a0yqgbil3nbs3dhs2-gzip-1.13-man",
+        "out": "/nix/store/rzw7y8gnpvv0q38xxvh4nykrgqj7jsnk-gzip-1.13"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gzip",
+      "broken": false,
+      "derivation": "/nix/store/6ci1206bkbf0pzkhzkjs42j79nmvr3lm-gzip-1.13.drv",
+      "description": "GNU zip compression program",
+      "install_id": "gzip",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "gzip-1.13",
+      "pname": "gzip",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.13",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/w10ylv7204msxnf8wrcxihdxi236wkld-gzip-1.13-info",
+        "man": "/nix/store/0m70gxldk1r3nj8wj5jqz5jbqqjz0wab-gzip-1.13-man",
+        "out": "/nix/store/pnydkl0h7s8qx0nni5albjnbidfvc2vs-gzip-1.13"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gzip",
+      "broken": false,
+      "derivation": "/nix/store/8rcca5minz8hkgp348qd2k4ix5q1iqxn-gzip-1.13.drv",
+      "description": "GNU zip compression program",
+      "install_id": "gzip",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "name": "gzip-1.13",
+      "pname": "gzip",
+      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
+      "rev_count": 746337,
+      "rev_date": "2025-02-01T11:46:30Z",
+      "scrape_date": "2025-02-02T00:30:00Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.13",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/i74jjjkwv7jcwrcw0kq3ad41wfp1gn0s-gzip-1.13-info",
+        "man": "/nix/store/096wljhw226ikkllax05j47zwfp1nli4-gzip-1.13-man",
+        "out": "/nix/store/3ixlnrilky99c34xw3w69xyx54iahwcr-gzip-1.13"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}
