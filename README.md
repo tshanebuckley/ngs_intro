@@ -124,6 +124,9 @@ Below, we will cover some basics of each container runtime. We will highlight ru
 
 Docker is the original container runtime. It typically requires a daemon process to be running to function normally, which can make local development difficult. Docker is also not recommended to be installed on local machines in production user environments as it exposes the security concern of elevating to root privileges.
 
+> [!NOTE]
+> A docker daemon is started as part of activating the flox environment.
+
 ### Running a Docker Image
 
 For a simple example of running a docker container image, run this command:
@@ -198,7 +201,7 @@ Like the service example above, our cli has the following commands:
 
 Our main take aways are the following:
 
-- Containers may be used to launch a service, but for bioinformatics, we will mainly use them to reproducibly run cli commands in pipelines
+- Containers may be used to launch a service, but for bioinformatics, we will mainly use them to reproducibly run cli commands in pipelines.
 - If we want files available in our container, we must mount them when starting/running the container.
 - Same as mounting, we must forward ports to our local machine if we wish to do any networking.
 - Container images can live in registries and be pulled to my computer to run.
