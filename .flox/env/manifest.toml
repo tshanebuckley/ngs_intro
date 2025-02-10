@@ -11,6 +11,46 @@ version = 1
 [install]
 fastqc.pkg-path = "fastqc"
 gzip.pkg-path = "gzip"
+unzip.pkg-path = "unzip"
+jdk.pkg-path = "jdk"
+gcc.pkg-path = "gcc"
+CPAN.pkg-path = "perlPackages.CPAN"
+gnused.pkg-path = "gnused"
+gnumake.pkg-path = "gnumake"
+gnuplot.pkg-path = "gnuplot"
+samtools.pkg-path = "samtools"
+bcftools.pkg-path = "bcftools"
+bwa.pkg-path = "bwa"
+bowtie2.pkg-path = "bowtie2"
+htslib.pkg-path = "htslib"
+gatk.pkg-path = "gatk"
+igv.pkg-path = "igv"
+picard-tools.pkg-path = "picard-tools"
+bedtools.pkg-path = "bedtools"
+# NOTE: this is just the conda shell, so we will manually run the install script
+# conda.pkg-path = "conda"
+# conda.systems = ["aarch64-linux", "x86_64-linux"]
+# conda requirements
+libSM.pkg-path = "xorg.libSM"
+libICE.pkg-path = "xorg.libICE"
+libXrender.pkg-path = "xorg.libXrender"
+libselinux.pkg-path = "libselinux"
+libselinux.systems = ["aarch64-linux", "x86_64-linux"]
+sratoolkit.pkg-path = "sratoolkit"
+SPAdes.pkg-path = "SPAdes"
+quast.pkg-path = "quast"
+graphviz.pkg-path = "graphviz"
+snpeff.pkg-path = "snpeff"
+ncbi-vdb.pkg-path = "ncbi-vdb"
+prodigal.pkg-path = "prodigal"
+hmmer.pkg-path = "hmmer"
+nextflow.pkg-path = "nextflow"
+nf-test.pkg-path = "nf-test"
+apptainer.pkg-path = "apptainer"
+apptainer.systems = ["aarch64-linux", "x86_64-linux"]
+docker.pkg-path = "docker"
+podman.pkg-path = "podman"
+gocryptfs.pkg-path = "gocryptfs"
 # hello.pkg-path = "hello"
 # nodejs = { version = "^20.15.1", pkg-path = "nodejs" }
 
@@ -29,43 +69,135 @@ gzip.pkg-path = "gzip"
 [hook]
 on-activate = '''
 
+    # get the system type
+    os_name=$(uname -s)
+    architecture=$(uname -m)
+    # save the os-architecture name
+    export OS_ARCHITECTURE="${os_name}-${architecture}"
+    # check operating system
+    case "$os_name" in
+        "Darwin")
+            echo "Operating System: macOS (Darwin)"
+            export OS_VALID=true
+            ;;
+        "Linux")
+            echo "Operating System: Linux"
+            export OS_VALID=true
+            ;;
+        *)
+            echo "Operating System: Unknown"
+            export OS_VALID=false
+            ;;
+    esac
+    # check architecture
+    case "$architecture" in
+        x86_64)
+            echo "System architecture: x86_64"
+            export ARCHITECTURE_VALID=true
+            ;;
+        aarch64)
+            echo "System architecture: aarch64"
+            export ARCHITECTURE_VALID=true
+            ;;
+        *)
+            echo "System architecture: Unknown ($architecture)"
+            export ARCHITECTURE_VALID=false
+            ;;
+    esac
+
+    if ! ($OS_VALID && $ARCHITECTURE_VALID); then
+        echo "Invalid system: ${OS_ARCHITECTURE}, exiting the environment.";
+        exit
+    fi
+
+    echo "Identified system as ${OS_ARCHITECTURE}."
+
+    # Set perl config env variables
+    export LC_ALL=C
+
+    # Set the repository root
+    export REPO_ROOT=$PWD
+
+    # Set the flox HOME to keep the user space clean
+    export HOME="${PWD}/.flox/lib/${USER}"
+    mkdir -p $HOME
+    mkdir -p $HOME/.local
+
     # Var for a local bin for the flox env
-    LOCAL_FLOX_BIN=$PWD/.flox/lib/.local/bin
+    LOCAL_FLOX_BIN=$HOME/.local/bin
 
     # Add the flox bin to the PATH
     export PATH="$LOCAL_FLOX_BIN:$PATH"
 
-    # Make the wkg path if it doesn't exist
+    # Make the bin path if it doesn't exist
     mkdir -p $LOCAL_FLOX_BIN
 
-    # sra-toolkit version
-    SRA_VER=3.2.0
+    # Make the expected default XDG Base Directory Specification paths
+    # https://specifications.freedesktop.org/basedir-spec/latest/
+    mkdir -p $HOME/.local/share # -> make $XDG_DATA_HOME
+    mkdir -p $HOME/.config # -> $XDG_CONFIG_HOME
+    mkdir -p $HOME/.local/state # -> $XDG_STATE_HOME
+    mkdir -p $HOME/.cache # -> $XDG_CACHE_HOME
+    # Create and set the $XDG_RUNTIME_DIR
+    export XDG_RUNTIME_DIR=$HOME/runtime
+    mkdir -p $XDG_RUNTIME_DIR
+    chmod 700 $XDG_RUNTIME_DIR
 
-    # sra-toolkit target
-    SRA_TARGET="sratoolkit.${SRA_VER}-ubuntu64"
+    # Configure rootless docker
+    export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
 
-    # sra-toolkit file name
-    SRA_FILENAME="${SRA_TARGET}.tar.gz"
+    # Copy the barebones podman policy.json
+    PODMAN_CFG=$HOME/.config/containers
+    PODMAN_CFG_FILE=$PODMAN_CFG/policy.json
+    mkdir -p $PODMAN_CFG
+    cp $REPO_ROOT/containers/policy.json $PODMAN_CFG
 
-    # sra-toolkit file
-    SRA_FILE="${LOCAL_FLOX_BIN}/${SRA_FILENAME}"
+    ### Conda ###
 
-    # sra-toolkit bin directory
-    SRA_BIN="${LOCAL_FLOX_BIN}/${SRA_TARGET}/bin"
+    # conda install script
+    CONDA_SH="Miniconda3-latest-${OS_ARCHITECTURE}.sh"
 
-    wget "https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.2.0/${SRA_FILENAME}" -O $SRA_FILE &&
-        tar -xvzf $SRA_FILE -C $LOCAL_FLOX_BIN &&
-        rm $SRA_FILE &&
-        export PATH=$SRA_BIN:$PATH
+    # conda install script path
+    CONDA_SH_PATH=$HOME/$CONDA_SH
+
+    # the conda specification file at the repo root
+    export CONDA_SPEC=$REPO_ROOT/conda_spec_file.txt
+    export CONDA_ENV=$REPO_ROOT/environment.yml
+
+    if [ ! -f $CONDA_SH_PATH ]; then
+        wget "https://repo.anaconda.com/miniconda/${CONDA_SH}" -O $CONDA_SH_PATH &&
+        bash $CONDA_SH_PATH -b -u -p $HOME/miniconda3
+        # init conda and reload the shell to activate
+        $HOME/miniconda3/bin/conda init bash
+        source $HOME/.bashrc
+        # add bioconda channel to the "bio" env
+        conda config --add channels bioconda
+        conda config --add channels conda-forge
+        conda config --set channel_priority strict
+        # if the conda environment file exists, then load the env
+        if [ -f $CONDA_ENV ]; then
+            # create a "bio" env to enter
+            conda env create -y -n bio -f $CONDA_ENV
+        else
+            # otherwise, just create the expected environment
+            conda env create -y -n bio
+        fi
+    fi
+
+    ### SIFT4G Annotator (available in conda, but only for linux, so we will install manually) ###
+
+    # name of the .jar file
+    SIFT4G_FILE=SIFT4G_Annotator.jar
+
+    # path to where we expect the .jar file to be downloaded
+    # NOTE: later in this file, we add an alias of "sift4G" to run this .jar file
+    export SIFT4G_PATH="${HOME}/${SIFT4G_FILE}"
+
+    if [ ! -f $SIFT4G_PATH ]; then
+        wget "https://github.com/pauline-ng/SIFT4G_Annotator/raw/master/${SIFT4G_FILE}" -O $SIFT4G_PATH
+    fi
+
 '''
-# on-activate = '''
-#   # Set variables, create files and directories
-#   venv_dir="$(mktemp -d)"
-#   export venv_dir
-#
-#   # Perform initialization steps, e.g. create a python venv
-#   python -m venv "$venv_dir"
-# '''
 
 # Scripts defined in the `[profile]` section are *sourced* by *your shell* and
 # inherit environment variables set in the `[vars]` section and by `[hook]` scripts.
@@ -73,19 +205,34 @@ on-activate = '''
 # taken to ensure compatibility with all shells, after which exactly one of
 # `profile.{bash,fish,tcsh,zsh}` is sourced by the corresponding shell.
 [profile]
-# common = '''
-#   echo "it's gettin' flox in here"
-# '''
+common = '''
+
+    # alias to run SIFT4G_Annotator.jar
+    alias sift4G="java -jar $SIFT4G_PATH"
+
+    # alias to export the conda environment identically
+    alias export_conda_spec="conda list --explicit > $CONDA_SPEC"
+
+    # alias to export the conda environment as a yaml file
+    alias export_conda_env="conda env export --from-history > $REPO_ROOT/environment.yml"
+
+    # exports the spec text file and the environment.yml file
+    alias export_conda="export_conda_spec && export_conda_env"
+
+    # enter the "bio" conda env
+    conda activate bio
+'''
 
 # The `[services]` section of the manifest allows you to define services.
 # Services defined here use the packages provided by the `[install]` section
 # and any variables you've defined in the `[vars]` section or `hook.on-activate` script.
 [services]
+docker.command = "dockerd-rootless" #starts the docker daemon
 # postgres.command = "postgres --config-file=pg.conf"
 
 # Additional options can be set in the `[options]` section. Refer to
 # manifest.toml(5) for a list of available options.
 [options]
-systems = ["aarch64-darwin", "aarch64-linux", "x86_64-darwin", "x86_64-linux"]
+systems = ["x86_64-linux", "x86_64-darwin", "aarch64-linux"]
 # Uncomment to disable CUDA detection.
 # cuda-detection = false

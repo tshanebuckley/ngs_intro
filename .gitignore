@@ -1,0 +1,6 @@
+venvs/conda/*
+!venvs/conda/.gitkeep
+venvs/flox/*
+!venvs/flox/.gitkeep
+.vscode
+Events.log

@@ -3,75 +3,860 @@
   "manifest": {
     "version": 1,
     "install": {
+      "CPAN": {
+        "pkg-path": "perlPackages.CPAN"
+      },
+      "SPAdes": {
+        "pkg-path": "SPAdes"
+      },
+      "apptainer": {
+        "pkg-path": "apptainer",
+        "systems": [
+          "aarch64-linux",
+          "x86_64-linux"
+        ]
+      },
+      "bcftools": {
+        "pkg-path": "bcftools"
+      },
+      "bedtools": {
+        "pkg-path": "bedtools"
+      },
+      "bowtie2": {
+        "pkg-path": "bowtie2"
+      },
+      "bwa": {
+        "pkg-path": "bwa"
+      },
+      "docker": {
+        "pkg-path": "docker"
+      },
       "fastqc": {
         "pkg-path": "fastqc"
       },
+      "gatk": {
+        "pkg-path": "gatk"
+      },
+      "gcc": {
+        "pkg-path": "gcc"
+      },
+      "gnumake": {
+        "pkg-path": "gnumake"
+      },
+      "gnuplot": {
+        "pkg-path": "gnuplot"
+      },
+      "gnused": {
+        "pkg-path": "gnused"
+      },
+      "gocryptfs": {
+        "pkg-path": "gocryptfs"
+      },
+      "graphviz": {
+        "pkg-path": "graphviz"
+      },
       "gzip": {
         "pkg-path": "gzip"
+      },
+      "hmmer": {
+        "pkg-path": "hmmer"
+      },
+      "htslib": {
+        "pkg-path": "htslib"
+      },
+      "igv": {
+        "pkg-path": "igv"
+      },
+      "jdk": {
+        "pkg-path": "jdk"
+      },
+      "libICE": {
+        "pkg-path": "xorg.libICE"
+      },
+      "libSM": {
+        "pkg-path": "xorg.libSM"
+      },
+      "libXrender": {
+        "pkg-path": "xorg.libXrender"
+      },
+      "libselinux": {
+        "pkg-path": "libselinux",
+        "systems": [
+          "aarch64-linux",
+          "x86_64-linux"
+        ]
+      },
+      "ncbi-vdb": {
+        "pkg-path": "ncbi-vdb"
+      },
+      "nextflow": {
+        "pkg-path": "nextflow"
+      },
+      "nf-test": {
+        "pkg-path": "nf-test"
+      },
+      "picard-tools": {
+        "pkg-path": "picard-tools"
+      },
+      "podman": {
+        "pkg-path": "podman"
+      },
+      "prodigal": {
+        "pkg-path": "prodigal"
+      },
+      "quast": {
+        "pkg-path": "quast"
+      },
+      "samtools": {
+        "pkg-path": "samtools"
+      },
+      "snpeff": {
+        "pkg-path": "snpeff"
+      },
+      "sratoolkit": {
+        "pkg-path": "sratoolkit"
+      },
+      "unzip": {
+        "pkg-path": "unzip"
       }
     },
     "hook": {
-      "on-activate": "\n    # Var for a local bin for the flox env\n    LOCAL_FLOX_BIN=$PWD/.flox/lib/.local/bin\n\n    # Add the flox bin to the PATH\n    export PATH=\"$LOCAL_FLOX_BIN:$PATH\"\n\n    # Make the wkg path if it doesn't exist\n    mkdir -p $LOCAL_FLOX_BIN\n\n    # sra-toolkit version\n    SRA_VER=3.2.0\n\n    # sra-toolkit target\n    SRA_TARGET=\"sratoolkit.${SRA_VER}-ubuntu64\"\n\n    # sra-toolkit file name\n    SRA_FILENAME=\"${SRA_TARGET}.tar.gz\"\n\n    # sra-toolkit file\n    SRA_FILE=\"${LOCAL_FLOX_BIN}/${SRA_FILENAME}\"\n\n    # sra-toolkit bin directory\n    SRA_BIN=\"${LOCAL_FLOX_BIN}/${SRA_TARGET}/bin\"\n\n    wget \"https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.2.0/${SRA_FILENAME}\" -O $SRA_FILE &&\n        tar -xvzf $SRA_FILE -C $LOCAL_FLOX_BIN &&\n        rm $SRA_FILE &&\n        export PATH=$SRA_BIN:$PATH\n"
+      "on-activate": "\n    # get the system type\n    os_name=$(uname -s)\n    architecture=$(uname -m)\n    # save the os-architecture name\n    export OS_ARCHITECTURE=\"${os_name}-${architecture}\"\n    # check operating system\n    case \"$os_name\" in\n        \"Darwin\")\n            echo \"Operating System: macOS (Darwin)\"\n            export OS_VALID=true\n            ;;\n        \"Linux\")\n            echo \"Operating System: Linux\"\n            export OS_VALID=true\n            ;;\n        *)\n            echo \"Operating System: Unknown\"\n            export OS_VALID=false\n            ;;\n    esac\n    # check architecture\n    case \"$architecture\" in\n        x86_64)\n            echo \"System architecture: x86_64\"\n            export ARCHITECTURE_VALID=true\n            ;;\n        aarch64)\n            echo \"System architecture: aarch64\"\n            export ARCHITECTURE_VALID=true\n            ;;\n        *)\n            echo \"System architecture: Unknown ($architecture)\"\n            export ARCHITECTURE_VALID=false\n            ;;\n    esac\n\n    if ! ($OS_VALID && $ARCHITECTURE_VALID); then\n        echo \"Invalid system: ${OS_ARCHITECTURE}, exiting the environment.\";\n        exit\n    fi\n\n    echo \"Identified system as ${OS_ARCHITECTURE}.\"\n\n    # Set perl config env variables\n    export LC_ALL=C\n\n    # Set the repository root\n    export REPO_ROOT=$PWD\n\n    # Set the flox HOME to keep the user space clean\n    export HOME=\"${PWD}/.flox/lib/${USER}\"\n    mkdir -p $HOME\n    mkdir -p $HOME/.local\n\n    # Var for a local bin for the flox env\n    LOCAL_FLOX_BIN=$HOME/.local/bin\n\n    # Add the flox bin to the PATH\n    export PATH=\"$LOCAL_FLOX_BIN:$PATH\"\n\n    # Make the bin path if it doesn't exist\n    mkdir -p $LOCAL_FLOX_BIN\n\n    # Make the expected default XDG Base Directory Specification paths\n    # https://specifications.freedesktop.org/basedir-spec/latest/\n    mkdir -p $HOME/.local/share # -> make $XDG_DATA_HOME\n    mkdir -p $HOME/.config # -> $XDG_CONFIG_HOME\n    mkdir -p $HOME/.local/state # -> $XDG_STATE_HOME\n    mkdir -p $HOME/.cache # -> $XDG_CACHE_HOME\n    # Create and set the $XDG_RUNTIME_DIR\n    export XDG_RUNTIME_DIR=$HOME/runtime\n    mkdir -p $XDG_RUNTIME_DIR\n    chmod 700 $XDG_RUNTIME_DIR\n\n    # Configure rootless docker\n    export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock\n\n    # Copy the barebones podman policy.json\n    PODMAN_CFG=$HOME/.config/containers\n    PODMAN_CFG_FILE=$PODMAN_CFG/policy.json\n    mkdir -p $PODMAN_CFG\n    cp $REPO_ROOT/containers/policy.json $PODMAN_CFG\n\n    ### Conda ###\n\n    # conda install script\n    CONDA_SH=\"Miniconda3-latest-${OS_ARCHITECTURE}.sh\"\n\n    # conda install script path\n    CONDA_SH_PATH=$HOME/$CONDA_SH\n\n    # the conda specification file at the repo root\n    export CONDA_SPEC=$REPO_ROOT/conda_spec_file.txt\n    export CONDA_ENV=$REPO_ROOT/environment.yml\n\n    if [ ! -f $CONDA_SH_PATH ]; then\n        wget \"https://repo.anaconda.com/miniconda/${CONDA_SH}\" -O $CONDA_SH_PATH &&\n        bash $CONDA_SH_PATH -b -u -p $HOME/miniconda3\n        # init conda and reload the shell to activate\n        $HOME/miniconda3/bin/conda init bash\n        source $HOME/.bashrc\n        # add bioconda channel to the \"bio\" env\n        conda config --add channels bioconda\n        conda config --add channels conda-forge\n        conda config --set channel_priority strict\n        # if the conda environment file exists, then load the env\n        if [ -f $CONDA_ENV ]; then\n            # create a \"bio\" env to enter\n            conda env create -y -n bio -f $CONDA_ENV\n        else\n            # otherwise, just create the expected environment\n            conda env create -y -n bio\n        fi\n    fi\n\n    ### SIFT4G Annotator (available in conda, but only for linux, so we will install manually) ###\n\n    # name of the .jar file\n    SIFT4G_FILE=SIFT4G_Annotator.jar\n\n    # path to where we expect the .jar file to be downloaded\n    # NOTE: later in this file, we add an alias of \"sift4G\" to run this .jar file\n    export SIFT4G_PATH=\"${HOME}/${SIFT4G_FILE}\"\n\n    if [ ! -f $SIFT4G_PATH ]; then\n        wget \"https://github.com/pauline-ng/SIFT4G_Annotator/raw/master/${SIFT4G_FILE}\" -O $SIFT4G_PATH\n    fi\n\n"
     },
-    "profile": {},
+    "profile": {
+      "common": "\n    # alias to run SIFT4G_Annotator.jar\n    alias sift4G=\"java -jar $SIFT4G_PATH\"\n\n    # alias to export the conda environment identically\n    alias export_conda_spec=\"conda list --explicit > $CONDA_SPEC\"\n\n    # alias to export the conda environment as a yaml file\n    alias export_conda_env=\"conda env export --from-history > $REPO_ROOT/environment.yml\"\n\n    # exports the spec text file and the environment.yml file\n    alias export_conda=\"export_conda_spec && export_conda_env\"\n\n    # enter the \"bio\" conda env\n    conda activate bio\n"
+    },
     "options": {
       "systems": [
-        "aarch64-darwin",
-        "aarch64-linux",
+        "x86_64-linux",
         "x86_64-darwin",
-        "x86_64-linux"
+        "aarch64-linux"
       ],
       "allow": {
         "licenses": []
       },
       "semver": {}
+    },
+    "services": {
+      "docker": {
+        "command": "dockerd-rootless",
+        "vars": null,
+        "is-daemon": null,
+        "shutdown": null,
+        "systems": null
+      }
     }
   },
   "packages": [
     {
-      "attr_path": "fastqc",
+      "attr_path": "perlPackages.CPAN",
       "broken": false,
-      "derivation": "/nix/store/6j2zbw1xq5wrgml26aznk0md57lh1flx-fastqc-0.12.1.drv",
-      "description": "A quality control application for high throughput sequence data",
-      "install_id": "fastqc",
-      "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
-      "name": "fastqc-0.12.1",
-      "pname": "fastqc",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "derivation": "/nix/store/7p3rlz8mg7zzsayvsnvib5icfkhjwz7q-perl5.40.0-CPAN-2.36.drv",
+      "description": "Query, download and build perl modules from CPAN sites",
+      "install_id": "CPAN",
+      "license": "[ Artistic-1.0, GPL-1.0-or-later ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "perl5.40.0-CPAN-2.36",
+      "pname": "CPAN",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "0.12.1",
+      "version": "perl5.40.0-CPAN-2.36",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/5kikpkhrsbrwxgnzzzkqwwjbkj00z2ca-fastqc-0.12.1"
+        "devdoc": "/nix/store/0w983y0zgwdqlsazy66w3cd5vb1aix0j-perl5.40.0-CPAN-2.36-devdoc",
+        "out": "/nix/store/m9q9a7yag0jqfxrqbfx6whl96c346azb-perl5.40.0-CPAN-2.36"
       },
-      "system": "aarch64-darwin",
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "perlPackages.CPAN",
+      "broken": false,
+      "derivation": "/nix/store/iisipjni44fl0fbwv0q9psp1fvg75g41-perl5.40.0-CPAN-2.36.drv",
+      "description": "Query, download and build perl modules from CPAN sites",
+      "install_id": "CPAN",
+      "license": "[ Artistic-1.0, GPL-1.0-or-later ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "perl5.40.0-CPAN-2.36",
+      "pname": "CPAN",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "perl5.40.0-CPAN-2.36",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "devdoc": "/nix/store/dzj9adw35960q7s8h2aayfn2ynk9rnxw-perl5.40.0-CPAN-2.36-devdoc",
+        "out": "/nix/store/s4hmwbldx8j66bl6fsrycnv5z0iw1k4c-perl5.40.0-CPAN-2.36"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "perlPackages.CPAN",
+      "broken": false,
+      "derivation": "/nix/store/nxjbl6yrqdsq096y3qd1bwbkhpp99cby-perl5.40.0-CPAN-2.36.drv",
+      "description": "Query, download and build perl modules from CPAN sites",
+      "install_id": "CPAN",
+      "license": "[ Artistic-1.0, GPL-1.0-or-later ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "perl5.40.0-CPAN-2.36",
+      "pname": "CPAN",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "perl5.40.0-CPAN-2.36",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "devdoc": "/nix/store/zp4lh5xlny2jj0y8gahac4v936i08h12-perl5.40.0-CPAN-2.36-devdoc",
+        "out": "/nix/store/8w53y5mdbnj55hzrbm95wax6m3h7kk07-perl5.40.0-CPAN-2.36"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "SPAdes",
+      "broken": false,
+      "derivation": "/nix/store/sc0wzjhcm6savigkg19qs6xbngmwf5pz-spades-4.0.0.drv",
+      "description": "St. Petersburg genome assembler, a toolkit for assembling and analyzing sequencing data",
+      "install_id": "SPAdes",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "spades-4.0.0",
+      "pname": "SPAdes",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "spades-4.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/af76v93wwalgpw2pi5icdcvwswjq9ih7-spades-4.0.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "SPAdes",
+      "broken": false,
+      "derivation": "/nix/store/3fydn174kxnnrjdjc0mif35gxx7lz2y2-spades-4.0.0.drv",
+      "description": "St. Petersburg genome assembler, a toolkit for assembling and analyzing sequencing data",
+      "install_id": "SPAdes",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "spades-4.0.0",
+      "pname": "SPAdes",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "spades-4.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/r8mrq21b1jq6c7aq7g0qfky2l0qn58g6-spades-4.0.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "SPAdes",
+      "broken": false,
+      "derivation": "/nix/store/gwq9cw6s711x7m8bf6f7b913sy7cm3dr-spades-4.0.0.drv",
+      "description": "St. Petersburg genome assembler, a toolkit for assembling and analyzing sequencing data",
+      "install_id": "SPAdes",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "spades-4.0.0",
+      "pname": "SPAdes",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "spades-4.0.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/y3an1qh7j832izjdql8jwmz57hlf41vh-spades-4.0.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "apptainer",
+      "broken": false,
+      "derivation": "/nix/store/rwan3bhfcsmvim0ccfmyjf0by5q2w62s-apptainer-1.3.6.drv",
+      "description": "Application containers for linux (previously known as Singularity)",
+      "install_id": "apptainer",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "apptainer-1.3.6",
+      "pname": "apptainer",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.3.6",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/3fsfv68d9cigdx0bqvkxvld5wxfhibpw-apptainer-1.3.6"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "apptainer",
+      "broken": false,
+      "derivation": "/nix/store/232iqr46lsmxf7dc6i6gw4xyq8rqlzwf-apptainer-1.3.6.drv",
+      "description": "Application containers for linux (previously known as Singularity)",
+      "install_id": "apptainer",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "apptainer-1.3.6",
+      "pname": "apptainer",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.3.6",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/r6z1b3c4i7kify9b6ax03pypya5n6a6s-apptainer-1.3.6"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bcftools",
+      "broken": false,
+      "derivation": "/nix/store/xw9phdymj1lg0884vlwr24i13iq8gi2i-bcftools-1.21.drv",
+      "description": "Tools for manipulating BCF2/VCF/gVCF format, SNP and short indel sequence variants",
+      "install_id": "bcftools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bcftools-1.21",
+      "pname": "bcftools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/49117z97s6nvjx4iyhma3d7k93ad3fqz-bcftools-1.21"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bcftools",
+      "broken": false,
+      "derivation": "/nix/store/vag51pmmahr1p7x3p6hax6gzc73g1qvk-bcftools-1.21.drv",
+      "description": "Tools for manipulating BCF2/VCF/gVCF format, SNP and short indel sequence variants",
+      "install_id": "bcftools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bcftools-1.21",
+      "pname": "bcftools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/q7nmph2v11q020b1yz4bwsv3my5m8k8g-bcftools-1.21"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bcftools",
+      "broken": false,
+      "derivation": "/nix/store/ar1darda5fmplkz7d607454lngws0dbl-bcftools-1.21.drv",
+      "description": "Tools for manipulating BCF2/VCF/gVCF format, SNP and short indel sequence variants",
+      "install_id": "bcftools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bcftools-1.21",
+      "pname": "bcftools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/iln7n9wz209f4i0cnmm2ff0390sj8mjf-bcftools-1.21"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bedtools",
+      "broken": false,
+      "derivation": "/nix/store/bf8sq2mn2j5yx68vj5wnzswy9wrvk3wm-bedtools-2.31.1.drv",
+      "description": "Powerful toolset for genome arithmetic",
+      "install_id": "bedtools",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bedtools-2.31.1",
+      "pname": "bedtools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.31.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ym4ni0l507jbhirgmr1x4kv0vq81g9f3-bedtools-2.31.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bedtools",
+      "broken": false,
+      "derivation": "/nix/store/qqw1bx9ywffnj9qx7w68149yxn37xwch-bedtools-2.31.1.drv",
+      "description": "Powerful toolset for genome arithmetic",
+      "install_id": "bedtools",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bedtools-2.31.1",
+      "pname": "bedtools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.31.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/dcsyihjkbnc41zk9kdqcc3q6ymhb3f9a-bedtools-2.31.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bedtools",
+      "broken": false,
+      "derivation": "/nix/store/4swiqbcspnmq2kmlvffn8kl28ms7cxgg-bedtools-2.31.1.drv",
+      "description": "Powerful toolset for genome arithmetic",
+      "install_id": "bedtools",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bedtools-2.31.1",
+      "pname": "bedtools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.31.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/q0n6jq3ffqd8rv6q1vngga1ffcf5i243-bedtools-2.31.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bowtie2",
+      "broken": false,
+      "derivation": "/nix/store/s178qs5m8j5xr2cmbm4f5sj26z3h0x0c-bowtie2-2.5.4.drv",
+      "description": "Ultrafast and memory-efficient tool for aligning sequencing reads to long reference sequences",
+      "install_id": "bowtie2",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bowtie2-2.5.4",
+      "pname": "bowtie2",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.5.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/73mr99ca2j3f0kf4dcdkg2hcxls8c9v3-bowtie2-2.5.4"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bowtie2",
+      "broken": false,
+      "derivation": "/nix/store/dbhbzxvddnnwg4p4pw2j4wyz0v9ww8qd-bowtie2-2.5.4.drv",
+      "description": "Ultrafast and memory-efficient tool for aligning sequencing reads to long reference sequences",
+      "install_id": "bowtie2",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bowtie2-2.5.4",
+      "pname": "bowtie2",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.5.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/aafhchh1nznmv038gkl5mnx3kx303784-bowtie2-2.5.4"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bowtie2",
+      "broken": false,
+      "derivation": "/nix/store/2fhz9hi2kzx6vf4gyvgnbrwh9hpnpdx4-bowtie2-2.5.4.drv",
+      "description": "Ultrafast and memory-efficient tool for aligning sequencing reads to long reference sequences",
+      "install_id": "bowtie2",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bowtie2-2.5.4",
+      "pname": "bowtie2",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.5.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ncjqmgnk9yrw7033zprjllaq2pc0ghjq-bowtie2-2.5.4"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bwa",
+      "broken": false,
+      "derivation": "/nix/store/f7cbv5ylwvinalvlzjjd1g6lxbs5mm7h-bwa-unstable-2022-09-23.drv",
+      "description": "Software package for mapping low-divergent sequences against a large reference genome, such as the human genome",
+      "install_id": "bwa",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bwa-unstable-2022-09-23",
+      "pname": "bwa",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "unstable-2022-09-23",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/hk5x7rqfhcrcdqwq68hi6jw13kmir0hn-bwa-unstable-2022-09-23"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bwa",
+      "broken": false,
+      "derivation": "/nix/store/brwbx0l26pqggfhnc7hkm0x6fykr51jb-bwa-unstable-2022-09-23.drv",
+      "description": "Software package for mapping low-divergent sequences against a large reference genome, such as the human genome",
+      "install_id": "bwa",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bwa-unstable-2022-09-23",
+      "pname": "bwa",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "unstable-2022-09-23",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/9gdrxxisf6kqdiy9gj04w3l8ks3pkb08-bwa-unstable-2022-09-23"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bwa",
+      "broken": false,
+      "derivation": "/nix/store/zn8vhkl63gx21y6a76isrcwyz0wfy52r-bwa-unstable-2022-09-23.drv",
+      "description": "Software package for mapping low-divergent sequences against a large reference genome, such as the human genome",
+      "install_id": "bwa",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "bwa-unstable-2022-09-23",
+      "pname": "bwa",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "unstable-2022-09-23",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/wsmbhpnfs1c1jsbj22yq2fvy63kajdqv-bwa-unstable-2022-09-23"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "docker",
+      "broken": false,
+      "derivation": "/nix/store/3rgyia8n4r4pil840dcnp7fr9zkdg85j-docker-27.5.1.drv",
+      "description": "Open source project to pack, ship and run any application as a lightweight container",
+      "install_id": "docker",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "docker-27.5.1",
+      "pname": "docker",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "27.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/jnzrrks201f2abb205zs0n5dddj7az9r-docker-27.5.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "docker",
+      "broken": false,
+      "derivation": "/nix/store/wa6fd0j5rkyvsnswij5g8f6gb00h4lds-docker-27.5.1.drv",
+      "description": "Open source project to pack, ship and run any application as a lightweight container",
+      "install_id": "docker",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "docker-27.5.1",
+      "pname": "docker",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "27.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/jdpzzccq8a9rajiqgjz58snjvbpg784m-docker-27.5.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "docker",
+      "broken": false,
+      "derivation": "/nix/store/s4ahymp0i7sl1abchvr07f69n6mfpjwk-docker-27.5.1.drv",
+      "description": "Open source project to pack, ship and run any application as a lightweight container",
+      "install_id": "docker",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "docker-27.5.1",
+      "pname": "docker",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "27.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ksmj926px4bm84klmvmq10zi5dhdv57i-docker-27.5.1"
+      },
+      "system": "aarch64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
       "attr_path": "fastqc",
       "broken": false,
-      "derivation": "/nix/store/l5aska44q4xq1zl4fw17l274zggcbw10-fastqc-0.12.1.drv",
+      "derivation": "/nix/store/a5z9l020hlw97yc36a04iqwp39fr0iig-fastqc-0.12.1.drv",
       "description": "A quality control application for high throughput sequence data",
       "install_id": "fastqc",
       "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
       "name": "fastqc-0.12.1",
       "pname": "fastqc",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -80,9 +865,9 @@
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/mly2hsq5bbw7zw7918jg4178q18gh71c-fastqc-0.12.1"
+        "out": "/nix/store/9k781kmal9zwafi1lvsby5hipx9qg8lm-fastqc-0.12.1"
       },
-      "system": "aarch64-linux",
+      "system": "x86_64-linux",
       "group": "toplevel",
       "priority": 5
     },
@@ -93,14 +878,15 @@
       "description": "A quality control application for high throughput sequence data",
       "install_id": "fastqc",
       "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
       "name": "fastqc-0.12.1",
       "pname": "fastqc",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -118,18 +904,19 @@
     {
       "attr_path": "fastqc",
       "broken": false,
-      "derivation": "/nix/store/a5z9l020hlw97yc36a04iqwp39fr0iig-fastqc-0.12.1.drv",
+      "derivation": "/nix/store/l5aska44q4xq1zl4fw17l274zggcbw10-fastqc-0.12.1.drv",
       "description": "A quality control application for high throughput sequence data",
       "install_id": "fastqc",
       "license": "[ GPL-3.0-or-later, Apache-2.0 ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
       "name": "fastqc-0.12.1",
       "pname": "fastqc",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -138,59 +925,681 @@
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/9k781kmal9zwafi1lvsby5hipx9qg8lm-fastqc-0.12.1"
+        "out": "/nix/store/mly2hsq5bbw7zw7918jg4178q18gh71c-fastqc-0.12.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gatk",
+      "broken": false,
+      "derivation": "/nix/store/fmi1czhflfcgxgg0gh4p02jf0mr3cbf0-gatk-4.6.1.0.drv",
+      "description": "Wide variety of tools with a primary focus on variant discovery and genotyping.",
+      "install_id": "gatk",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gatk-4.6.1.0",
+      "pname": "gatk",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.6.1.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/4v94938vjqhri4x0lxqak4wclvs0r48x-gatk-4.6.1.0"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "gzip",
+      "attr_path": "gatk",
       "broken": false,
-      "derivation": "/nix/store/l7smqyabpasjag950rldbg1dkpr7skaj-gzip-1.13.drv",
-      "description": "GNU zip compression program",
-      "install_id": "gzip",
-      "license": "GPL-3.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
-      "name": "gzip-1.13",
-      "pname": "gzip",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "derivation": "/nix/store/iy61298c0k1aqbxb8hmrqcl72q71y9gx-gatk-4.6.1.0.drv",
+      "description": "Wide variety of tools with a primary focus on variant discovery and genotyping.",
+      "install_id": "gatk",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gatk-4.6.1.0",
+      "pname": "gatk",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "1.13",
+      "version": "4.6.1.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/2gy6bqls4w5ljank24bnn545vfwk8yy3-gatk-4.6.1.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gatk",
+      "broken": false,
+      "derivation": "/nix/store/i353zwkylp58kqdi963a1l2fbhch2h6j-gatk-4.6.1.0.drv",
+      "description": "Wide variety of tools with a primary focus on variant discovery and genotyping.",
+      "install_id": "gatk",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gatk-4.6.1.0",
+      "pname": "gatk",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.6.1.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/9zacad1g4sz7nar2wkn5sa5dcadgwwdn-gatk-4.6.1.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gcc",
+      "broken": false,
+      "derivation": "/nix/store/vln6q47in3l4lxbf2k2r4qkypjbwvgm6-gcc-wrapper-14-20241116.drv",
+      "description": "GNU Compiler Collection, version 14-20241116 (wrapper script)",
+      "install_id": "gcc",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gcc-wrapper-14-20241116",
+      "pname": "gcc",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "wrapper-14-20241116",
       "outputs_to_install": [
         "man",
         "out"
       ],
       "outputs": {
-        "info": "/nix/store/c8b6j348hgmgnnmb2792byjdv8wapy5f-gzip-1.13-info",
-        "man": "/nix/store/j01fc4qv62gcdhj2isalr186vlc6ggzd-gzip-1.13-man",
-        "out": "/nix/store/h6dg2cxp4j9fs8dmcxshz9sa3f8dcjrh-gzip-1.13"
+        "info": "/nix/store/r6yrni3cg9fwi7fz9kh0yjpawlq46fma-gcc-wrapper-14-20241116-info",
+        "man": "/nix/store/zq9gpzd177y8k88s3lwinhcss6rhwbw5-gcc-wrapper-14-20241116-man",
+        "out": "/nix/store/591apldfgm1gr238rbfc8ib0y1z8ng2y-gcc-wrapper-14-20241116"
       },
-      "system": "aarch64-darwin",
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gcc",
+      "broken": false,
+      "derivation": "/nix/store/x32fmyl3vj11hvrdpb6j34gdihg6s4ha-gcc-wrapper-14-20241116.drv",
+      "description": "GNU Compiler Collection, version 14-20241116 (wrapper script)",
+      "install_id": "gcc",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gcc-wrapper-14-20241116",
+      "pname": "gcc",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "wrapper-14-20241116",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/drgl9d80hpz66p82jxqmg9kdfqgjqxck-gcc-wrapper-14-20241116-info",
+        "man": "/nix/store/wav9029m9qzx0ha84mkc35zim02hwsh8-gcc-wrapper-14-20241116-man",
+        "out": "/nix/store/3jaczspfki3262h5wljq3hs7y3d1y8fv-gcc-wrapper-14-20241116"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gcc",
+      "broken": false,
+      "derivation": "/nix/store/3bdfrnb5s3gr3llc8bl82av2vzynhd0f-gcc-wrapper-14-20241116.drv",
+      "description": "GNU Compiler Collection, version 14-20241116 (wrapper script)",
+      "install_id": "gcc",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gcc-wrapper-14-20241116",
+      "pname": "gcc",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "wrapper-14-20241116",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/idzgrcpqf64fbvrmqkhkpjfmlwvj2yr2-gcc-wrapper-14-20241116-info",
+        "man": "/nix/store/dfldax7p1iv57y27awv6fvghc0lhc7a1-gcc-wrapper-14-20241116-man",
+        "out": "/nix/store/lfyq43b8x5c3nc2808lwx9zv4i6ypvdh-gcc-wrapper-14-20241116"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnumake",
+      "broken": false,
+      "derivation": "/nix/store/c4d8vh9d7yrqr4yhqwphwy33ksfzqla3-gnumake-4.4.1.drv",
+      "description": "Tool to control the generation of non-source files from sources",
+      "install_id": "gnumake",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnumake-4.4.1",
+      "pname": "gnumake",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.4.1",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/70idd90xklk1iah6c3xyb1kgrc86hj42-gnumake-4.4.1-debug",
+        "info": "/nix/store/jxg6sn1ang81pyp3l66i8c0gncnkdhdh-gnumake-4.4.1-info",
+        "man": "/nix/store/ndg9b34ayibwwf7z0i2vajgh3kxyk43r-gnumake-4.4.1-man",
+        "out": "/nix/store/lsy9s0skv65xhprr9yhmig2c844qgi5f-gnumake-4.4.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnumake",
+      "broken": false,
+      "derivation": "/nix/store/a4smlfwlsx7ywchmdz4ysbyb1hr59d5k-gnumake-4.4.1.drv",
+      "description": "Tool to control the generation of non-source files from sources",
+      "install_id": "gnumake",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnumake-4.4.1",
+      "pname": "gnumake",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.4.1",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/rjyq24zm3l6q0s6pv2c1aapx7mbfaz50-gnumake-4.4.1-info",
+        "man": "/nix/store/y99mf9qv9kbbxcwb9l187h3y4khhmjyc-gnumake-4.4.1-man",
+        "out": "/nix/store/85rlha3lfj2l14c9d0fz3k0crvps3baw-gnumake-4.4.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnumake",
+      "broken": false,
+      "derivation": "/nix/store/pysmjzi907yvcmf1bkv4b6zg25qy3dfh-gnumake-4.4.1.drv",
+      "description": "Tool to control the generation of non-source files from sources",
+      "install_id": "gnumake",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnumake-4.4.1",
+      "pname": "gnumake",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.4.1",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/rvl823mgrpnd086jgi3v96vh12ghkcvd-gnumake-4.4.1-debug",
+        "info": "/nix/store/spf1ilhshgxpwqaybd4wbb302al98ws4-gnumake-4.4.1-info",
+        "man": "/nix/store/ax9cdx1w6jj511q0vlhh313qf3gmvg13-gnumake-4.4.1-man",
+        "out": "/nix/store/zrsbdqh6l91d978fdavi7hvpmb2ihw99-gnumake-4.4.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnuplot",
+      "broken": false,
+      "derivation": "/nix/store/zzdazkhsimgn1dqbxydnff2jhr9075d8-gnuplot-6.0.2.drv",
+      "description": "Portable command-line driven graphing utility for many platforms",
+      "install_id": "gnuplot",
+      "license": "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/Copyright",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnuplot-6.0.2",
+      "pname": "gnuplot",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/zffnn0yzwvg73ljyaphylk7sd4na3s18-gnuplot-6.0.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnuplot",
+      "broken": false,
+      "derivation": "/nix/store/xza8y999iq1iv0a7lz82cvhz2qarxvkq-gnuplot-6.0.2.drv",
+      "description": "Portable command-line driven graphing utility for many platforms",
+      "install_id": "gnuplot",
+      "license": "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/Copyright",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnuplot-6.0.2",
+      "pname": "gnuplot",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/7w5di9xpgflmfdsygqj6spw7979xw0q7-gnuplot-6.0.2"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnuplot",
+      "broken": false,
+      "derivation": "/nix/store/isv2m38gidzilfavw0i0ybh59vwlbd49-gnuplot-6.0.2.drv",
+      "description": "Portable command-line driven graphing utility for many platforms",
+      "install_id": "gnuplot",
+      "license": "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/Copyright",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnuplot-6.0.2",
+      "pname": "gnuplot",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/wql70bchls4v3qx3rz3y6mxjf3y8snm7-gnuplot-6.0.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnused",
+      "broken": false,
+      "derivation": "/nix/store/wb13fpd6710ylmqxsrkvxv7hfgc9m6ci-gnused-4.9.drv",
+      "description": "GNU sed, a batch stream editor",
+      "install_id": "gnused",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnused-4.9",
+      "pname": "gnused",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/7h0nwqnacvxqjvq7kn5a5ppwp2v7ccc1-gnused-4.9-info",
+        "out": "/nix/store/v93bdqf52x2r2lqijv0f7x3yhylwy957-gnused-4.9"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnused",
+      "broken": false,
+      "derivation": "/nix/store/hyiijc6f4p5f4c5pivkrjjajfahmg3w5-gnused-4.9.drv",
+      "description": "GNU sed, a batch stream editor",
+      "install_id": "gnused",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnused-4.9",
+      "pname": "gnused",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/bkkq3x0flb95kg2vdzdydykymvvr896a-gnused-4.9-info",
+        "out": "/nix/store/40j8br4hnzpfx92swmrvsmgia0ia1vgg-gnused-4.9"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gnused",
+      "broken": false,
+      "derivation": "/nix/store/138djhcs8nblyf7yp3ads80wps5ldb2b-gnused-4.9.drv",
+      "description": "GNU sed, a batch stream editor",
+      "install_id": "gnused",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gnused-4.9",
+      "pname": "gnused",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/xlnxy4bd0m78q70m9v84azabb25aw426-gnused-4.9-info",
+        "out": "/nix/store/wzsl0yvjdmpsfc1pv0q5ff2giyw79q2m-gnused-4.9"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gocryptfs",
+      "broken": false,
+      "derivation": "/nix/store/z7pykl22v2614f8vm3xgrcnmmvb8b0wr-gocryptfs-2.5.1.drv",
+      "description": "Encrypted overlay filesystem written in Go",
+      "install_id": "gocryptfs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gocryptfs-2.5.1",
+      "pname": "gocryptfs",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/4jn09nyx302pasf3m9m4isa54vc7m4qv-gocryptfs-2.5.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gocryptfs",
+      "broken": false,
+      "derivation": "/nix/store/a5dlaw1qp5ins2m3nzpc1rfava926hll-gocryptfs-2.5.1.drv",
+      "description": "Encrypted overlay filesystem written in Go",
+      "install_id": "gocryptfs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gocryptfs-2.5.1",
+      "pname": "gocryptfs",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/scdlwhsgc0i4bnnwf1022gqiywg7qaq9-gocryptfs-2.5.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gocryptfs",
+      "broken": false,
+      "derivation": "/nix/store/ccxxhk0ggxvjy074xk00n6ff85mczmd0-gocryptfs-2.5.1.drv",
+      "description": "Encrypted overlay filesystem written in Go",
+      "install_id": "gocryptfs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "gocryptfs-2.5.1",
+      "pname": "gocryptfs",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/hdzddrrqjikxpajc4llazlfrd4wpg7x5-gocryptfs-2.5.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "graphviz",
+      "broken": false,
+      "derivation": "/nix/store/2xgs21ywyi1ifya8l1b4ca8r0w06kkdy-graphviz-12.2.1.drv",
+      "description": "Graph visualization tools",
+      "install_id": "graphviz",
+      "license": "EPL-1.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "graphviz-12.2.1",
+      "pname": "graphviz",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "12.2.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/78r9vrx0h5pp0wlzwrlbs7972qggad6r-graphviz-12.2.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "graphviz",
+      "broken": false,
+      "derivation": "/nix/store/waw2nwmyapff1v92q32qmh7fisdvwgmw-graphviz-12.2.1.drv",
+      "description": "Graph visualization tools",
+      "install_id": "graphviz",
+      "license": "EPL-1.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "graphviz-12.2.1",
+      "pname": "graphviz",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "12.2.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/aw7vvpxph870hk2drjc7knrhajvrydxs-graphviz-12.2.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "graphviz",
+      "broken": false,
+      "derivation": "/nix/store/bigl3ng298c9vf39gc29rva03xaavfm4-graphviz-12.2.1.drv",
+      "description": "Graph visualization tools",
+      "install_id": "graphviz",
+      "license": "EPL-1.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "graphviz-12.2.1",
+      "pname": "graphviz",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "12.2.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/95j5rkiib512r83ws85g11h0pxgngg98-graphviz-12.2.1"
+      },
+      "system": "aarch64-linux",
       "group": "toplevel",
       "priority": 5
     },
     {
       "attr_path": "gzip",
       "broken": false,
-      "derivation": "/nix/store/lhw0iaxq0bpcbp23zkvw4ff9v1wqkj64-gzip-1.13.drv",
+      "derivation": "/nix/store/8rcca5minz8hkgp348qd2k4ix5q1iqxn-gzip-1.13.drv",
       "description": "GNU zip compression program",
       "install_id": "gzip",
       "license": "GPL-3.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
       "name": "gzip-1.13",
       "pname": "gzip",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -200,11 +1609,11 @@
         "out"
       ],
       "outputs": {
-        "info": "/nix/store/ml3658wdv35njkpjpnhmhc1g14wfjca1-gzip-1.13-info",
-        "man": "/nix/store/0s0jcvf4jw538h5a0yqgbil3nbs3dhs2-gzip-1.13-man",
-        "out": "/nix/store/rzw7y8gnpvv0q38xxvh4nykrgqj7jsnk-gzip-1.13"
+        "info": "/nix/store/i74jjjkwv7jcwrcw0kq3ad41wfp1gn0s-gzip-1.13-info",
+        "man": "/nix/store/096wljhw226ikkllax05j47zwfp1nli4-gzip-1.13-man",
+        "out": "/nix/store/3ixlnrilky99c34xw3w69xyx54iahwcr-gzip-1.13"
       },
-      "system": "aarch64-linux",
+      "system": "x86_64-linux",
       "group": "toplevel",
       "priority": 5
     },
@@ -215,14 +1624,15 @@
       "description": "GNU zip compression program",
       "install_id": "gzip",
       "license": "GPL-3.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
       "name": "gzip-1.13",
       "pname": "gzip",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -243,18 +1653,19 @@
     {
       "attr_path": "gzip",
       "broken": false,
-      "derivation": "/nix/store/8rcca5minz8hkgp348qd2k4ix5q1iqxn-gzip-1.13.drv",
+      "derivation": "/nix/store/lhw0iaxq0bpcbp23zkvw4ff9v1wqkj64-gzip-1.13.drv",
       "description": "GNU zip compression program",
       "install_id": "gzip",
       "license": "GPL-3.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=3a228057f5b619feb3186e986dbe76278d707b6e",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
       "name": "gzip-1.13",
       "pname": "gzip",
-      "rev": "3a228057f5b619feb3186e986dbe76278d707b6e",
-      "rev_count": 746337,
-      "rev_date": "2025-02-01T11:46:30Z",
-      "scrape_date": "2025-02-02T00:30:00Z",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -264,11 +1675,1710 @@
         "out"
       ],
       "outputs": {
-        "info": "/nix/store/i74jjjkwv7jcwrcw0kq3ad41wfp1gn0s-gzip-1.13-info",
-        "man": "/nix/store/096wljhw226ikkllax05j47zwfp1nli4-gzip-1.13-man",
-        "out": "/nix/store/3ixlnrilky99c34xw3w69xyx54iahwcr-gzip-1.13"
+        "info": "/nix/store/ml3658wdv35njkpjpnhmhc1g14wfjca1-gzip-1.13-info",
+        "man": "/nix/store/0s0jcvf4jw538h5a0yqgbil3nbs3dhs2-gzip-1.13-man",
+        "out": "/nix/store/rzw7y8gnpvv0q38xxvh4nykrgqj7jsnk-gzip-1.13"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "hmmer",
+      "broken": false,
+      "derivation": "/nix/store/lry2jlpg0wkj8bx4ljfhmwnkwnc4lfg1-hmmer-3.4.drv",
+      "description": "Biosequence analysis using profile hidden Markov models",
+      "install_id": "hmmer",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "hmmer-3.4",
+      "pname": "hmmer",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/7s72qk3rmpl5mgq1lajrskgfg7kxnrav-hmmer-3.4"
       },
       "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "hmmer",
+      "broken": false,
+      "derivation": "/nix/store/00nax82f6qyjvpppzahp6vb8sbp68dig-hmmer-3.4.drv",
+      "description": "Biosequence analysis using profile hidden Markov models",
+      "install_id": "hmmer",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "hmmer-3.4",
+      "pname": "hmmer",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/afvdrlc7yg1vjxf5hnkmc75mxidham84-hmmer-3.4"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "hmmer",
+      "broken": false,
+      "derivation": "/nix/store/5r3zcwsvdvalvs59p8l7pidq0gk4rkkr-hmmer-3.4.drv",
+      "description": "Biosequence analysis using profile hidden Markov models",
+      "install_id": "hmmer",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "hmmer-3.4",
+      "pname": "hmmer",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/iwh4q9gqjj2zxs8pjdbmql4xkm6j23nj-hmmer-3.4"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "htslib",
+      "broken": false,
+      "derivation": "/nix/store/fb7a8kjb9wmi2psai608fnfj6hxbynmj-htslib-1.21.drv",
+      "description": "C library for reading/writing high-throughput sequencing data",
+      "install_id": "htslib",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "htslib-1.21",
+      "pname": "htslib",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/xamw2mlfnbk88yhirj27y56m0cwj0am4-htslib-1.21"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "htslib",
+      "broken": false,
+      "derivation": "/nix/store/vkh8na633djshz8z29mdqq6hz15ng6yv-htslib-1.21.drv",
+      "description": "C library for reading/writing high-throughput sequencing data",
+      "install_id": "htslib",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "htslib-1.21",
+      "pname": "htslib",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/nn95br5w3jkccna0bmk5brw162w3cwl5-htslib-1.21"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "htslib",
+      "broken": false,
+      "derivation": "/nix/store/2nz7q92yv9q5p9rd0cjpp1kncb73zm8s-htslib-1.21.drv",
+      "description": "C library for reading/writing high-throughput sequencing data",
+      "install_id": "htslib",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "htslib-1.21",
+      "pname": "htslib",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/hcpixl135akp34ilqvi4n244zj4wfcy4-htslib-1.21"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "igv",
+      "broken": false,
+      "derivation": "/nix/store/rbw5j08kn41hhi35hd8k7qkzlcgpraxn-igv-2.17.4.drv",
+      "description": "Visualization tool for interactive exploration of genomic datasets",
+      "install_id": "igv",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "igv-2.17.4",
+      "pname": "igv",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.17.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/xl6mfn0c0cpk2xjwizjaz49bcvbqfcpm-igv-2.17.4"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "igv",
+      "broken": false,
+      "derivation": "/nix/store/4gw38b6w86m4cixmk5a5qpda9ic3jpbl-igv-2.17.4.drv",
+      "description": "Visualization tool for interactive exploration of genomic datasets",
+      "install_id": "igv",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "igv-2.17.4",
+      "pname": "igv",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.17.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/4hfxlkccnngc260kjshcwqd5i5al39fn-igv-2.17.4"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "igv",
+      "broken": false,
+      "derivation": "/nix/store/zp3cjkgbdvxxm89cki1h5sf87asifm9d-igv-2.17.4.drv",
+      "description": "Visualization tool for interactive exploration of genomic datasets",
+      "install_id": "igv",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "igv-2.17.4",
+      "pname": "igv",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.17.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/j5f69ijizn3hahp64zyfy6iis9r6w0lh-igv-2.17.4"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jdk",
+      "broken": false,
+      "derivation": "/nix/store/36mgpnbjcihr0rhkzxnr742mzg4yjlm7-openjdk-21.0.5+11.drv",
+      "description": "Open-source Java Development Kit",
+      "install_id": "jdk",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "openjdk-21.0.5+11",
+      "pname": "jdk",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "openjdk-21.0.5+11",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/lfh5zvvgc16pmknxy2bdfz7hz3kavk38-openjdk-21.0.5+11-debug",
+        "out": "/nix/store/fvvrs66f430kk0ns48ysm029h4z7spac-openjdk-21.0.5+11"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jdk",
+      "broken": false,
+      "derivation": "/nix/store/szdzzdvalq3dx4akhi479gzbxcm1xh7i-zulu-ca-jdk-21.0.4.drv",
+      "description": "Certified builds of OpenJDK",
+      "install_id": "jdk",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "zulu-ca-jdk-21.0.4",
+      "pname": "jdk",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "zulu-ca-jdk-21.0.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ak8v2vmpys31g2nxj6xk8qh67avz9y9k-zulu-ca-jdk-21.0.4"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "jdk",
+      "broken": false,
+      "derivation": "/nix/store/1mawqgbywqfb0gdxwhww5rvv7sgw31b6-openjdk-21.0.5+11.drv",
+      "description": "Open-source Java Development Kit",
+      "install_id": "jdk",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "openjdk-21.0.5+11",
+      "pname": "jdk",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "openjdk-21.0.5+11",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/0zhng1xn6y8bgscjar54rxpx4wg936bx-openjdk-21.0.5+11-debug",
+        "out": "/nix/store/7b7ly4d5lfsj1nflv6b5qqkbbdr50ik9-openjdk-21.0.5+11"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libICE",
+      "broken": false,
+      "derivation": "/nix/store/3fw8pw03b6ajb51snz3ahf11j68b2vwn-libICE-1.1.2.drv",
+      "install_id": "libICE",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libICE-1.1.2",
+      "pname": "libICE",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.1.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/2w5j4wdq24nd78553y8s3xb4arn1wm4i-libICE-1.1.2-dev",
+        "doc": "/nix/store/5s0h0yik7j0hqajzphq3yr1gg3i6a9xl-libICE-1.1.2-doc",
+        "out": "/nix/store/vcsajx7h8jh0yq9sd6509pmlf6n8yppd-libICE-1.1.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libICE",
+      "broken": false,
+      "derivation": "/nix/store/g3fks8pdjzsyshzlw0yj25wwcx065637-libICE-1.1.2.drv",
+      "install_id": "libICE",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libICE-1.1.2",
+      "pname": "libICE",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.1.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/zskwvqc2fxldw6glq8s3kdz5sc2j8j9l-libICE-1.1.2-dev",
+        "doc": "/nix/store/lk566p0fk4x12djw6vcl6y9c5w89p04b-libICE-1.1.2-doc",
+        "out": "/nix/store/zj2bsy9xvkb5p51760shxsiijrsjpm0x-libICE-1.1.2"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libICE",
+      "broken": false,
+      "derivation": "/nix/store/7ig5lpw9zjf8i411prr9n8wlnxnj1ldi-libICE-1.1.2.drv",
+      "install_id": "libICE",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libICE-1.1.2",
+      "pname": "libICE",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.1.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/18cg60gjb3ksxx6d5wywj2z66cg2yfin-libICE-1.1.2-dev",
+        "doc": "/nix/store/kzn6nd2cy5qy0zf51gaam7f02phkkjdb-libICE-1.1.2-doc",
+        "out": "/nix/store/gwr49cxb4fy6iw2a5cy7fba2aa7ck253-libICE-1.1.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libSM",
+      "broken": false,
+      "derivation": "/nix/store/wm5wgx8d2wqp2i5kib9pcvidivrrw5z5-libSM-1.2.5.drv",
+      "install_id": "libSM",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libSM-1.2.5",
+      "pname": "libSM",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.2.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/6ms8l41inlwwgj1k814f5zc4ffwx5piw-libSM-1.2.5-dev",
+        "doc": "/nix/store/xrbsypxmf64qrx02gi9lz11pibsdfwsc-libSM-1.2.5-doc",
+        "out": "/nix/store/w9b0c91yq98v4xc4x2pmbdcizwvv1az6-libSM-1.2.5"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libSM",
+      "broken": false,
+      "derivation": "/nix/store/lhhs2x8151h08q197bykwv1shfzgi31c-libSM-1.2.5.drv",
+      "install_id": "libSM",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libSM-1.2.5",
+      "pname": "libSM",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.2.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/qmh92pdxbg2jj3xwxaqxb13z1y152aq5-libSM-1.2.5-dev",
+        "doc": "/nix/store/1x3gkrh8czg1kzm5bwd1xh8na4q436gb-libSM-1.2.5-doc",
+        "out": "/nix/store/zrc16sf2wsryicz80ly20hzzsjh4wcfq-libSM-1.2.5"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libSM",
+      "broken": false,
+      "derivation": "/nix/store/andl07m0372q66z36psgp5wk8ar6nxks-libSM-1.2.5.drv",
+      "install_id": "libSM",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libSM-1.2.5",
+      "pname": "libSM",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.2.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/mip6fqr8pmp6i6v1vw7jk4b2mnmwxs9g-libSM-1.2.5-dev",
+        "doc": "/nix/store/94xlvrixgqxy82acy9gria73zbijz0zz-libSM-1.2.5-doc",
+        "out": "/nix/store/y69dfyjnwjy353f53azkqbqq2b29h3k9-libSM-1.2.5"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libXrender",
+      "broken": false,
+      "derivation": "/nix/store/lvpl6caz000a19ws2xx26nbw81r0hg5z-libXrender-0.9.12.drv",
+      "install_id": "libXrender",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libXrender-0.9.12",
+      "pname": "libXrender",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.9.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/a65aaph7lp8k4mgs5c8v17gp3ziigz35-libXrender-0.9.12-dev",
+        "doc": "/nix/store/24jy33wzwijfjncjband443g2wbb54bd-libXrender-0.9.12-doc",
+        "out": "/nix/store/20vvfm2rlivlfxgiw9ya8gw5xrx7ln45-libXrender-0.9.12"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libXrender",
+      "broken": false,
+      "derivation": "/nix/store/07c1cw3mzkgmblk4n4abl57k7zywcf69-libXrender-0.9.12.drv",
+      "install_id": "libXrender",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libXrender-0.9.12",
+      "pname": "libXrender",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.9.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/9mrf9flgibady6jbna2s5zxnfm29s9ry-libXrender-0.9.12-dev",
+        "doc": "/nix/store/1rg2ilx15ivs9mq1i93p5fr250bl88x4-libXrender-0.9.12-doc",
+        "out": "/nix/store/cwll603nydh3wiss46rffbvh37nbjxsj-libXrender-0.9.12"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xorg.libXrender",
+      "broken": false,
+      "derivation": "/nix/store/3a9pkzlb9ri97f5bd85vvfdj3p88l8v9-libXrender-0.9.12.drv",
+      "install_id": "libXrender",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libXrender-0.9.12",
+      "pname": "libXrender",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.9.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/d56j55jacnm899f3dvfvssqgagjb5xlz-libXrender-0.9.12-dev",
+        "doc": "/nix/store/z9l7jn329r3zzzqgyjy7l2igalmj7b8f-libXrender-0.9.12-doc",
+        "out": "/nix/store/cm2vkkn77sqycbkwaalipxcm7d04y9jq-libXrender-0.9.12"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "libselinux",
+      "broken": false,
+      "derivation": "/nix/store/mybyiylbr3rbbkzxnapnksx7s0q6ym41-libselinux-3.7.drv",
+      "description": "SELinux core library",
+      "install_id": "libselinux",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libselinux-3.7",
+      "pname": "libselinux",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.7",
+      "outputs_to_install": [
+        "bin",
+        "man"
+      ],
+      "outputs": {
+        "bin": "/nix/store/qdf7jr5z7x0ambpzcl8n6vv9vp3d2isz-libselinux-3.7-bin",
+        "dev": "/nix/store/y5s6mrnlwar2gbip6mgzj3fz9kyzi5ny-libselinux-3.7-dev",
+        "man": "/nix/store/w5paplqx5m4lmd7412irl0n5v2pln39g-libselinux-3.7-man",
+        "out": "/nix/store/gp0k35ylvzzgaxc9rrvmhmkk9jyimaym-libselinux-3.7"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "libselinux",
+      "broken": false,
+      "derivation": "/nix/store/221z1bb82gl291b19ykln391bk33qmm1-libselinux-3.7.drv",
+      "description": "SELinux core library",
+      "install_id": "libselinux",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "libselinux-3.7",
+      "pname": "libselinux",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.7",
+      "outputs_to_install": [
+        "bin",
+        "man"
+      ],
+      "outputs": {
+        "bin": "/nix/store/bw7b9pjy6gbbp4316diyjxarw123sah9-libselinux-3.7-bin",
+        "dev": "/nix/store/aq5jdh0jrwbl9m925s83zga4jzp9awia-libselinux-3.7-dev",
+        "man": "/nix/store/wrnzbimas80cz8mrg2lh9gnpymjz4qv5-libselinux-3.7-man",
+        "out": "/nix/store/fzyq6bjw9ivjglf0c9nih5cqa092kmqc-libselinux-3.7"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "ncbi-vdb",
+      "broken": false,
+      "derivation": "/nix/store/a5b1ywq7i51yf6zmhff8nsxnh3gganhv-ncbi-vdb-3.1.1.drv",
+      "description": "Libraries for the INSDC Sequence Read Archives",
+      "install_id": "ncbi-vdb",
+      "license": "NCBI-PD",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "ncbi-vdb-3.1.1",
+      "pname": "ncbi-vdb",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "3.1.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/dvm7nsmhdwy2r5d8cv9x8mpga67lwm28-ncbi-vdb-3.1.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "ncbi-vdb",
+      "broken": false,
+      "derivation": "/nix/store/hxb6b49c5dmyii860cs03y9857ybzwaf-ncbi-vdb-3.1.1.drv",
+      "description": "Libraries for the INSDC Sequence Read Archives",
+      "install_id": "ncbi-vdb",
+      "license": "NCBI-PD",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "ncbi-vdb-3.1.1",
+      "pname": "ncbi-vdb",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "3.1.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ag1r8aihnnj55zppp124046ngglx9mlj-ncbi-vdb-3.1.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "ncbi-vdb",
+      "broken": false,
+      "derivation": "/nix/store/hf930ynfg4p3k7bcj31xx2vlgz3xsy1y-ncbi-vdb-3.1.1.drv",
+      "description": "Libraries for the INSDC Sequence Read Archives",
+      "install_id": "ncbi-vdb",
+      "license": "NCBI-PD",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "ncbi-vdb-3.1.1",
+      "pname": "ncbi-vdb",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "3.1.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/f6pj7brpgydcrpr7504y6i4j8fmmczqv-ncbi-vdb-3.1.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nextflow",
+      "broken": false,
+      "derivation": "/nix/store/h6rlrbgkqbxm3p61ai19d6ikhcglyd6l-nextflow-24.08.0-edge.drv",
+      "description": "DSL for data-driven computational pipelines",
+      "install_id": "nextflow",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "nextflow-24.08.0-edge",
+      "pname": "nextflow",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "24.08.0-edge",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/6p4fza4a7wg3cjavf22y3hrjcf1c1wx1-nextflow-24.08.0-edge"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nextflow",
+      "broken": false,
+      "derivation": "/nix/store/vpsqa3pnrpfqlryzf7cy8gig3fi6q546-nextflow-24.08.0-edge.drv",
+      "description": "DSL for data-driven computational pipelines",
+      "install_id": "nextflow",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "nextflow-24.08.0-edge",
+      "pname": "nextflow",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "24.08.0-edge",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/1a5s37qq7sr5wd5fb8v5n7260gk2hma4-nextflow-24.08.0-edge"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nextflow",
+      "broken": false,
+      "derivation": "/nix/store/i5l9fmb2fm70xjc74jlj26bgh3rk0av6-nextflow-24.08.0-edge.drv",
+      "description": "DSL for data-driven computational pipelines",
+      "install_id": "nextflow",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "nextflow-24.08.0-edge",
+      "pname": "nextflow",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "24.08.0-edge",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/02shqyvhnwg90xzyrxg0mc8fqffb8p77-nextflow-24.08.0-edge"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nf-test",
+      "broken": false,
+      "derivation": "/nix/store/hyhnff7pf2jiphv6dmx26qm3f4mkigrw-nf-test-0.9.2.drv",
+      "description": "Simple test framework for Nextflow pipelines",
+      "install_id": "nf-test",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "nf-test-0.9.2",
+      "pname": "nf-test",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.9.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/2zrzf44vlv2jxf57hnqxd4v70cq004jv-nf-test-0.9.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nf-test",
+      "broken": false,
+      "derivation": "/nix/store/l2icg4w132x1fvmz3ax7q31k7xvfcx8n-nf-test-0.9.2.drv",
+      "description": "Simple test framework for Nextflow pipelines",
+      "install_id": "nf-test",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "nf-test-0.9.2",
+      "pname": "nf-test",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.9.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/r5dv2jhxl7b9nx60fmb47psffabyrr0j-nf-test-0.9.2"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nf-test",
+      "broken": false,
+      "derivation": "/nix/store/1f06ydh4xzh0gxhhr9ycmnnjfwh1w5k5-nf-test-0.9.2.drv",
+      "description": "Simple test framework for Nextflow pipelines",
+      "install_id": "nf-test",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "nf-test-0.9.2",
+      "pname": "nf-test",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.9.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/9byj4p9q2xn1ipfqsfy7011gigbj897a-nf-test-0.9.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "picard-tools",
+      "broken": false,
+      "derivation": "/nix/store/3hyxnfsb4m22rb33m6yj7wlz5spdicl2-picard-tools-3.3.0.drv",
+      "description": "Tools for high-throughput sequencing (HTS) data and formats such as SAM/BAM/CRAM and VCF",
+      "install_id": "picard-tools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "picard-tools-3.3.0",
+      "pname": "picard-tools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/1fixvncgqv4d2yprs9x9bkgnanj187na-picard-tools-3.3.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "picard-tools",
+      "broken": false,
+      "derivation": "/nix/store/wyd7wpfzgglr4rxhziw41vrdlh6xs6s2-picard-tools-3.3.0.drv",
+      "description": "Tools for high-throughput sequencing (HTS) data and formats such as SAM/BAM/CRAM and VCF",
+      "install_id": "picard-tools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "picard-tools-3.3.0",
+      "pname": "picard-tools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/5brsrb93wz6s9lsqb22rk93xdydpznv6-picard-tools-3.3.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "picard-tools",
+      "broken": false,
+      "derivation": "/nix/store/rvs7q72fhxgs2q2hgkqbs13x4gsccx06-picard-tools-3.3.0.drv",
+      "description": "Tools for high-throughput sequencing (HTS) data and formats such as SAM/BAM/CRAM and VCF",
+      "install_id": "picard-tools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "picard-tools-3.3.0",
+      "pname": "picard-tools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/gcb0v3x9r24ji4rsf5jmy332g3km9mwx-picard-tools-3.3.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "podman",
+      "broken": false,
+      "derivation": "/nix/store/3p507277igkd5ngzn61lagqw3g4ilx1x-podman-5.3.1.drv",
+      "description": "Program for managing pods, containers and container images",
+      "install_id": "podman",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "podman-5.3.1",
+      "pname": "podman",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "5.3.1",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/kkvydx1b7bk5grs2drb6yyxvgla2gxxs-podman-5.3.1-man",
+        "out": "/nix/store/sj3fi96mmf30nyvgq0xy1p0shgpr6v3x-podman-5.3.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "podman",
+      "broken": false,
+      "derivation": "/nix/store/xxixakapjzl18pdqmbsis6crzvc0dnhf-podman-5.3.1.drv",
+      "description": "Program for managing pods, containers and container images",
+      "install_id": "podman",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "podman-5.3.1",
+      "pname": "podman",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "5.3.1",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/pjwb3dxzzgrw6fgfpqzs1mmfmi3zgaxm-podman-5.3.1-man",
+        "out": "/nix/store/mnnawhhzpyfvwi9xwvc1ynhlvryd2dmy-podman-5.3.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "podman",
+      "broken": false,
+      "derivation": "/nix/store/r2yv80anab8gyfp7aznkziwjscad9ajd-podman-5.3.1.drv",
+      "description": "Program for managing pods, containers and container images",
+      "install_id": "podman",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "podman-5.3.1",
+      "pname": "podman",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "5.3.1",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/v096w5nf3iprk15g56d3bshkbj8zbkhq-podman-5.3.1-man",
+        "out": "/nix/store/9lkwcnl2kpnrnfd7xg2nj95dgn8abpb2-podman-5.3.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "prodigal",
+      "broken": false,
+      "derivation": "/nix/store/3li5lxfbwiml3x6plr2nj2bniyqcsm5b-prodigal-2.6.3.drv",
+      "description": "Fast, reliable protein-coding gene prediction for prokaryotic genomes",
+      "install_id": "prodigal",
+      "license": "GPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "prodigal-2.6.3",
+      "pname": "prodigal",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.6.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/z1iy7cmp3645bipbkcsmzgmvgii83jb3-prodigal-2.6.3"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "prodigal",
+      "broken": false,
+      "derivation": "/nix/store/76hyh5kz3abic9i53p1i6ijas2s5jgag-prodigal-2.6.3.drv",
+      "description": "Fast, reliable protein-coding gene prediction for prokaryotic genomes",
+      "install_id": "prodigal",
+      "license": "GPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "prodigal-2.6.3",
+      "pname": "prodigal",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.6.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/kynm0d7jvl7zm8j8i49n5a6nv5kgwqbc-prodigal-2.6.3"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "prodigal",
+      "broken": false,
+      "derivation": "/nix/store/7h4ayd14a7w1071f72da00liiym2v9d1-prodigal-2.6.3.drv",
+      "description": "Fast, reliable protein-coding gene prediction for prokaryotic genomes",
+      "install_id": "prodigal",
+      "license": "GPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "prodigal-2.6.3",
+      "pname": "prodigal",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.6.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/9vyn5jbdd1gx45zl4j20k8jcns6y1slr-prodigal-2.6.3"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "quast",
+      "broken": false,
+      "derivation": "/nix/store/4qcdj3jln6gkx2f6d6hd2n4f5gn2h9sy-quast-5.3.0.drv",
+      "description": "Evaluates genome assemblies by computing various metrics",
+      "install_id": "quast",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "quast-5.3.0",
+      "pname": "quast",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "5.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/y4y8ld2m0w7kkqva8fgdhb9s01fqhdfg-quast-5.3.0-dist",
+        "out": "/nix/store/rxbiyi63z74xdmdpw7i3gf57hqwl3cvh-quast-5.3.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "quast",
+      "broken": false,
+      "derivation": "/nix/store/q69krmv421mjbmg6fif9plrb0zymllwl-quast-5.3.0.drv",
+      "description": "Evaluates genome assemblies by computing various metrics",
+      "install_id": "quast",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "quast-5.3.0",
+      "pname": "quast",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "5.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/6n8gajawa6a2gnfv5bpv9f1bqqnsngjz-quast-5.3.0-dist",
+        "out": "/nix/store/dza21mmds99bm9g4bg5vda4pvg018f1c-quast-5.3.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "quast",
+      "broken": false,
+      "derivation": "/nix/store/lq7hr0fg450xz05a4w06xk63nn9xb9j6-quast-5.3.0.drv",
+      "description": "Evaluates genome assemblies by computing various metrics",
+      "install_id": "quast",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "quast-5.3.0",
+      "pname": "quast",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "5.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/sfb8lvav136whzmp6ppxrz5a5qlzp33a-quast-5.3.0-dist",
+        "out": "/nix/store/r51lcq7ngmppq1z6y37q7ajabn6rrrxl-quast-5.3.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "samtools",
+      "broken": false,
+      "derivation": "/nix/store/37mplrnhmg3zvc22llmcb3s3j9kmzydb-samtools-1.21.drv",
+      "description": "Tools for manipulating SAM/BAM/CRAM format",
+      "install_id": "samtools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "samtools-1.21",
+      "pname": "samtools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/qvh4a7khb7m9vkijh7jprxlxs2vyvq0w-samtools-1.21"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "samtools",
+      "broken": false,
+      "derivation": "/nix/store/5c5bh8hjc3wj9rzdd1j0lim7gqr7fqrk-samtools-1.21.drv",
+      "description": "Tools for manipulating SAM/BAM/CRAM format",
+      "install_id": "samtools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "samtools-1.21",
+      "pname": "samtools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/dy46dq1lsycjycn8zlp7pac9zwiksbwf-samtools-1.21"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "samtools",
+      "broken": false,
+      "derivation": "/nix/store/icmqfn7cqhrdsr55r0ixanp5fx7y64vn-samtools-1.21.drv",
+      "description": "Tools for manipulating SAM/BAM/CRAM format",
+      "install_id": "samtools",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "samtools-1.21",
+      "pname": "samtools",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.21",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/dfvwdpksnk8ibm3nly3jd8aawsnv4inf-samtools-1.21"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "snpeff",
+      "broken": false,
+      "derivation": "/nix/store/3ssams8knpfqdjw5na539p5qqidap2kp-snpeff-4.3t.drv",
+      "description": "Genetic variant annotation and effect prediction toolbox",
+      "install_id": "snpeff",
+      "license": "LGPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "snpeff-4.3t",
+      "pname": "snpeff",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.3t",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/hf3ggl1di84r6016z4gp2af32p8pv38k-snpeff-4.3t"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "snpeff",
+      "broken": false,
+      "derivation": "/nix/store/08n9d2gzha4brcldkg5kh0a81zlvrdim-snpeff-4.3t.drv",
+      "description": "Genetic variant annotation and effect prediction toolbox",
+      "install_id": "snpeff",
+      "license": "LGPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "snpeff-4.3t",
+      "pname": "snpeff",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.3t",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/n91pgnzr2z52nggsdivbijnf332917lv-snpeff-4.3t"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "snpeff",
+      "broken": false,
+      "derivation": "/nix/store/kklmr4sjmcnziqfca7q8byminkwsffzr-snpeff-4.3t.drv",
+      "description": "Genetic variant annotation and effect prediction toolbox",
+      "install_id": "snpeff",
+      "license": "LGPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "snpeff-4.3t",
+      "pname": "snpeff",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.3t",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/w68gjpm5qam6cs4x7isrrpxbsl04avx9-snpeff-4.3t"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "sratoolkit",
+      "broken": false,
+      "derivation": "/nix/store/sh019zplhkaspvcfcd7gzkbaib4qr69w-sratoolkit-3.1.1.drv",
+      "description": "Collection of tools and libraries for using data in the INSDC Sequence Read Archives",
+      "install_id": "sratoolkit",
+      "license": "NCBI-PD",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "sratoolkit-3.1.1",
+      "pname": "sratoolkit",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "3.1.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/w0qsghb1ybsl8z7zpb0ap2l26bxhv127-sratoolkit-3.1.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "sratoolkit",
+      "broken": false,
+      "derivation": "/nix/store/9v0fndps5xgr5mbhvaizwlw1gawzsfwa-sratoolkit-3.1.1.drv",
+      "description": "Collection of tools and libraries for using data in the INSDC Sequence Read Archives",
+      "install_id": "sratoolkit",
+      "license": "NCBI-PD",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "sratoolkit-3.1.1",
+      "pname": "sratoolkit",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "3.1.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/s40g8bvb4b39l7cm9zb3p03yhihwpxb3-sratoolkit-3.1.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "sratoolkit",
+      "broken": false,
+      "derivation": "/nix/store/bi76w9qyyqzw7h2m6gvp7kr3cvv6id1v-sratoolkit-3.1.1.drv",
+      "description": "Collection of tools and libraries for using data in the INSDC Sequence Read Archives",
+      "install_id": "sratoolkit",
+      "license": "NCBI-PD",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "sratoolkit-3.1.1",
+      "pname": "sratoolkit",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "3.1.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/g5sk1a49zyhk1w06ys0wwdqh80hphjbg-sratoolkit-3.1.1"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/j849ds9lc1jjghaah17751dc47h2lzk1-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/94cyvr4rq9d71lvkph4fbrqizs6kvp1m-unzip-6.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/94nmi2kwx5na26k1ikabn1lb97kp4pys-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/j7mnxx3g72q1b4fz9m8vyb8ij7dac24c-unzip-6.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/9cv9vhmwhq76b7nn4i50zkb07wlb3a53-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/nrmvi371jvg8r47xc5c2sxah1s2rk8wn-unzip-6.0"
+      },
+      "system": "aarch64-linux",
       "group": "toplevel",
       "priority": 5
     }

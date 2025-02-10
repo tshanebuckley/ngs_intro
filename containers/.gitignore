@@ -1,0 +1,5 @@
+lolcow.sif
+lolcow_remote_docker.sif
+hello.sif
+messages/*
+!messages/.gitkeep
