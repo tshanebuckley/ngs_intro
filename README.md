@@ -57,7 +57,7 @@ That's pretty much it, you clone the repo and get going!
 ## Repository Structure
 
 Under the `.flox` folder, you will find the basic flox environment. As you use this environment and after the initial activation,
-you will notice that the `.flox/lib` directory will include a directory with the same name as your user profile. This folder is created and used as your $HOME directory to keep this completely isolated from your main system. This makes cleaning this up as simple as deleting the cloned repository and helps avoid overriding or overlapping with your system.
+you will notice that the `.flox/lib` directory will include a directory with the same name as your user profile. This folder is created and used as your `$HOME` directory to keep this completely isolated from your main system. This makes cleaning this up as simple as deleting the cloned repository and helps avoid overriding or overlapping with your system.
 
 Everything else are examples to try running yourself. Have fun!
 
