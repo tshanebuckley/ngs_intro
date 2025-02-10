@@ -19,7 +19,7 @@ Also includes some extra [nextflow] code after watching this [demo](https://yout
 
 ## Requirements
 
-You must be on a Linux OS (tested with Ubuntu), and have [flox](https://flox.dev/docs/install-flox/) and [git](https://git-scm.com/) installed.
+You must be on a Unix-based OS (tested with Ubuntu), and have [flox](https://flox.dev/docs/install-flox/) and [git](https://git-scm.com/) installed.
 
 For Windows users: it is recommended to use the Windows Subsystem for Linux, AKA: [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
