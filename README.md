@@ -23,7 +23,7 @@ You must be on a Unix-based OS (tested with Ubuntu), and have [flox](https://flo
 
 For Windows users: it is recommended to use the Windows Subsystem for Linux, AKA: [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-For Mac users: If you have a Mac with an Intel processor, this should work as it, but is untested. Otherwise sorry, but looks like you'll need to use a VM or find a Linux or Windows machine.
+For Mac users: If you have a Mac with an Intel processor, this should work as is, but is untested. Otherwise sorry, but looks like you'll need to use a VM or find a Linux or Windows machine.
 
 > [!WARNING]
 > Running on Mac is untested and does not include Apptainer because it is unavailable for Darwin.
