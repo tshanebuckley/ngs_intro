@@ -103,11 +103,11 @@ This can be done with the following command:
 sudo apt-get install -y uidmap
 ```
 
-A rootless docker daemon is set to start on startup. If using docker, start flox with the `-s` flag to start our configured services:
-
-```bash
-flox activate -s
-```
+> [!NOTE]
+> A rootless docker daemon is set to start on startup. If using docker, start flox with the `-s` flag to start our configured services:
+> ```bash
+> flox activate -s
+> ```
 
 Our examples are meant to be run from the `ngs_intro/containers` directory, so navigate there before running any of the below examples. We will mainly focus on 3 examples for each container platform:
 
@@ -123,9 +123,6 @@ Below, we will cover some basics of each container runtime. We will highlight ru
 ## Docker
 
 Docker is the original container runtime. It typically requires a daemon process to be running to function normally, which can make local development difficult. Docker is also not recommended to be installed on local machines in production user environments as it exposes the security concern of elevating to root privileges.
-
-> [!NOTE]
-> A docker daemon is started as part of activating the flox environment.
 
 ### Running a Docker Image
 
@@ -294,7 +291,7 @@ apptainer exec --cwd /app -B ./messages:/app/messages hello.sif python cli.py me
 > [!TIP]
 > The `--cwd` argument is required when using the `exec` command as apptainer will default the current working directory to the directory from where apptainer is invoked.
 
-### Building and Running a Apptainer Image as a Service
+### Building and Running an Apptainer Image as a Service
 
 > [!WARNING]
 > Running the below task will NOT work with the nix environment we have created, but is included for completeness. This is because the nix install does NOT permit the user the behavior to launch network tasks or to operate as a fakeroot. If you happen to work in an environment where this is enabled, this could be useful to you.
@@ -323,7 +320,7 @@ With the goal of reproducibility, package managers exist to lower the burden of 
 
 While package managers simplify adding, removing, and updating packages, many of them also assist in revolving package version conflicts. These dependency conflicts may lead to a desire to have multiple environments designed for executing certain tasks or running certain software. Therefore, virtualizing environments allows us to have multiple different environments available on the same machine. These environments typically track themselves as a schema/config/manifest file of dependencies installed from a package managers. This also adds to the reproducibility aspect of virtual environments.
 
-In many cases, these virtual environments may be shared by their manifest and re-used. A common use case is also to uses these package managers and virtual environments to create containers as it reduces the amount of code that must be used to install the dependencies in the container definition (typically a Dockerfile).
+In many cases, these virtual environments may be shared by their manifest and re-used. A common use case is to use these package managers and virtual environments to create containers as it reduces the amount of code that must be used to install the dependencies in the container definition (typically a Dockerfile).
 
 We will focus on creating virtual environments using:
 
