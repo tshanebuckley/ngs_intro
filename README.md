@@ -171,11 +171,12 @@ Our simple [Flask]() application is built to serve files from the `/app/messages
 - `http://localhost:8080/messages/cow` -> `Moo!`
 - `http://localhost:8080/messages/cat` -> `Meow!`
 
-You can give it a try yourself and add your own text file.
+You can give it a try yourself by adding your own text files.
 
 You can stop the container by running `docker stop <CONTAINER ID>`, where you can get the `CONTAINER ID` from the original response from running `docker run` or from running `docker ps`.
 
-> [!WARNING] It's recommended to stop this docker container before moving on to any other examples.
+> [!WARNING]
+> It's recommended to stop this docker container before moving on to any other examples.
 
 ### Using our Docker Image to run a Script
 
@@ -204,7 +205,8 @@ Our main take aways are the following:
 - I can build container images on my computer using a Dockerfile (sometimes called a Containerfile).
 - A "container image" is the definition of a container to be run, but and a "container instance" is a specific instance of a running container.
 
-> [!NOTE] And most importantly, containers allow us to create re-usable environments to have better and more reproducible science.
+> [!NOTE]
+> And most importantly, containers allow us to create re-usable environments to have better and more reproducible science.
 
 ## Podman
 
@@ -482,7 +484,8 @@ cowsay "Hello, World!"
 
 You will probably get some perl warnings when running cowsay. To fix this, open the `./.flox/env/manifest.toml` file and add the following `vars` section:
 
-> [!TIP] You can make this edit through your terminal's default editor with `flox edit`, which will add the benefit of validating your flox config after editing.
+> [!TIP]
+> You can make this edit through your terminal's default editor with `flox edit`, which will add the benefit of validating your flox config after editing.
 
 ```diff
 ...
