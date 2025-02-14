@@ -172,6 +172,7 @@ on-activate = '''
         source $HOME/.bashrc
         # add bioconda channel to the "bio" env
         conda config --add channels bioconda
+        conda config --add channels qiime2
         conda config --add channels conda-forge
         conda config --set channel_priority strict
         # if the conda environment file exists, then load the env

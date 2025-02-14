@@ -647,7 +647,6 @@ dependencies:
   - nbformat==5.10.4=pyhd8ed1ab_1
   - ipopt==3.14.16=h59d4785_11
   - typing-extensions==4.12.2=hd8ed1ab_1
-  - _x86_64-microarch-level==4=2_x86_64_v4
   - ucsc-fatotwobit==472=h52f6b31_1
   - readline==8.2=h8228510_1
   - htslib==1.21=h5efdd21_0
