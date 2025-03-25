@@ -166,6 +166,7 @@ on-activate = '''
 
     if [ ! -f $CONDA_SH_PATH ]; then
         wget "https://repo.anaconda.com/miniconda/${CONDA_SH}" -O $CONDA_SH_PATH &&
+	chmod 775 $CONDA_SH_PATH &&
         bash $CONDA_SH_PATH -b -u -p $HOME/miniconda3
         # init conda and reload the shell to activate
         $HOME/miniconda3/bin/conda init bash
