@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Check if at least one argument is provided
+if [ "$#" -eq 0 ]; then
+    echo "Usage: openbrowser <URL or HTML file> [more URLs or files...]"
+    exit 1
+fi
+
+# Detect the correct command to use
+if command -v xdg-open >/dev/null; then
+    OPENER="xdg-open"
+elif command -v open >/dev/null; then
+    OPENER="open"
+elif command -v wslview >/dev/null; then
+    OPENER="wslview"
+else
+    echo "No compatible browser opener found."
+    exit 1
+fi
+
+# Loop through all arguments and open each one
+for ITEM in "$@"; do
+    $OPENER "$ITEM" &
+done
+

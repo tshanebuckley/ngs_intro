@@ -51,6 +51,9 @@ apptainer.systems = ["aarch64-linux", "x86_64-linux"]
 docker.pkg-path = "docker"
 podman.pkg-path = "podman"
 gocryptfs.pkg-path = "gocryptfs"
+xdg-utils.pkg-path = "xdg-utils"
+wslu.pkg-path = "wslu"
+wslu.systems = ["aarch64-linux", "x86_64-linux"]
 # hello.pkg-path = "hello"
 # nodejs = { version = "^20.15.1", pkg-path = "nodejs" }
 
@@ -170,8 +173,10 @@ on-activate = '''
         bash $CONDA_SH_PATH -b -u -p $HOME/miniconda3
         # init conda and reload the shell to activate
         $HOME/miniconda3/bin/conda init bash
+	# add a default umask to our .bashrc
+	echo "umask 002" >> $HOME/.bashrc
         source $HOME/.bashrc
-        # add bioconda channel to the "bio" env
+        # add necessary channels
         conda config --add channels bioconda
         conda config --add channels qiime2
         conda config --add channels conda-forge
@@ -182,9 +187,13 @@ on-activate = '''
             conda env create -y -n bio -f $CONDA_ENV
         else
             # otherwise, just create the expected environment
-            conda env create -y -n bio
+            echo "Unable to create the 'bio' conda env. Likely, the environment.yml file was not found."
+            exit
         fi
     fi
+
+    # copy over the "openbrowser" script to user's bin
+    cp "${PWD}/.flox/env/openbrowser" "${LOCAL_FLOX_BIN}/openbrowser"
 
     ### SIFT4G Annotator (available in conda, but only for linux, so we will install manually) ###
 

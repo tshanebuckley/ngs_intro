@@ -1,0 +1,9 @@
+ecoli/
+fastqs/
+preprocessing/
+qc/
+trimmomatic/
+adapter_list.txt
+contaminant_list.txt
+limits.txt
+SRR030834.fasta

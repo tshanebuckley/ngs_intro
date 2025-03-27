@@ -118,10 +118,20 @@
       },
       "unzip": {
         "pkg-path": "unzip"
+      },
+      "wslu": {
+        "pkg-path": "wslu",
+        "systems": [
+          "aarch64-linux",
+          "x86_64-linux"
+        ]
+      },
+      "xdg-utils": {
+        "pkg-path": "xdg-utils"
       }
     },
     "hook": {
-      "on-activate": "\n    # get the system type\n    os_name=$(uname -s)\n    architecture=$(uname -m)\n    # save the os-architecture name\n    export OS_ARCHITECTURE=\"${os_name}-${architecture}\"\n    # check operating system\n    case \"$os_name\" in\n        \"Darwin\")\n            echo \"Operating System: macOS (Darwin)\"\n            export OS_VALID=true\n            ;;\n        \"Linux\")\n            echo \"Operating System: Linux\"\n            export OS_VALID=true\n            ;;\n        *)\n            echo \"Operating System: Unknown\"\n            export OS_VALID=false\n            ;;\n    esac\n    # check architecture\n    case \"$architecture\" in\n        x86_64)\n            echo \"System architecture: x86_64\"\n            export ARCHITECTURE_VALID=true\n            ;;\n        aarch64)\n            echo \"System architecture: aarch64\"\n            export ARCHITECTURE_VALID=true\n            ;;\n        *)\n            echo \"System architecture: Unknown ($architecture)\"\n            export ARCHITECTURE_VALID=false\n            ;;\n    esac\n\n    if ! ($OS_VALID && $ARCHITECTURE_VALID); then\n        echo \"Invalid system: ${OS_ARCHITECTURE}, exiting the environment.\";\n        exit\n    fi\n\n    echo \"Identified system as ${OS_ARCHITECTURE}.\"\n\n    # Set perl config env variables\n    export LC_ALL=C\n\n    # Set the repository root\n    export REPO_ROOT=$PWD\n\n    # Set the flox HOME to keep the user space clean\n    export HOME=\"${PWD}/.flox/lib/${USER}\"\n    mkdir -p $HOME\n    mkdir -p $HOME/.local\n\n    # Var for a local bin for the flox env\n    LOCAL_FLOX_BIN=$HOME/.local/bin\n\n    # Add the flox bin to the PATH\n    export PATH=\"$LOCAL_FLOX_BIN:$PATH\"\n\n    # Make the bin path if it doesn't exist\n    mkdir -p $LOCAL_FLOX_BIN\n\n    # Make the expected default XDG Base Directory Specification paths\n    # https://specifications.freedesktop.org/basedir-spec/latest/\n    mkdir -p $HOME/.local/share # -> make $XDG_DATA_HOME\n    mkdir -p $HOME/.config # -> $XDG_CONFIG_HOME\n    mkdir -p $HOME/.local/state # -> $XDG_STATE_HOME\n    mkdir -p $HOME/.cache # -> $XDG_CACHE_HOME\n    # Create and set the $XDG_RUNTIME_DIR\n    export XDG_RUNTIME_DIR=$HOME/runtime\n    mkdir -p $XDG_RUNTIME_DIR\n    chmod 700 $XDG_RUNTIME_DIR\n\n    # Configure rootless docker\n    export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock\n\n    # Copy the barebones podman policy.json\n    PODMAN_CFG=$HOME/.config/containers\n    PODMAN_CFG_FILE=$PODMAN_CFG/policy.json\n    mkdir -p $PODMAN_CFG\n    cp $REPO_ROOT/containers/policy.json $PODMAN_CFG\n\n    ### Conda ###\n\n    # conda install script\n    CONDA_SH=\"Miniconda3-latest-${OS_ARCHITECTURE}.sh\"\n\n    # conda install script path\n    CONDA_SH_PATH=$HOME/$CONDA_SH\n\n    # the conda specification file at the repo root\n    export CONDA_SPEC=$REPO_ROOT/conda_spec_file.txt\n    export CONDA_ENV=$REPO_ROOT/environment.yml\n\n    if [ ! -f $CONDA_SH_PATH ]; then\n        wget \"https://repo.anaconda.com/miniconda/${CONDA_SH}\" -O $CONDA_SH_PATH &&\n\tchmod 775 $CONDA_SH_PATH &&\n        bash $CONDA_SH_PATH -b -u -p $HOME/miniconda3\n        # init conda and reload the shell to activate\n        $HOME/miniconda3/bin/conda init bash\n        source $HOME/.bashrc\n        # add bioconda channel to the \"bio\" env\n        conda config --add channels bioconda\n        conda config --add channels qiime2\n        conda config --add channels conda-forge\n        conda config --set channel_priority strict\n        # if the conda environment file exists, then load the env\n        if [ -f $CONDA_ENV ]; then\n            # create a \"bio\" env to enter\n            conda env create -y -n bio -f $CONDA_ENV\n        else\n            # otherwise, just create the expected environment\n            conda env create -y -n bio\n        fi\n    fi\n\n    ### SIFT4G Annotator (available in conda, but only for linux, so we will install manually) ###\n\n    # name of the .jar file\n    SIFT4G_FILE=SIFT4G_Annotator.jar\n\n    # path to where we expect the .jar file to be downloaded\n    # NOTE: later in this file, we add an alias of \"sift4G\" to run this .jar file\n    export SIFT4G_PATH=\"${HOME}/${SIFT4G_FILE}\"\n\n    if [ ! -f $SIFT4G_PATH ]; then\n        wget \"https://github.com/pauline-ng/SIFT4G_Annotator/raw/master/${SIFT4G_FILE}\" -O $SIFT4G_PATH\n    fi\n\n"
+      "on-activate": "\n    # get the system type\n    os_name=$(uname -s)\n    architecture=$(uname -m)\n    # save the os-architecture name\n    export OS_ARCHITECTURE=\"${os_name}-${architecture}\"\n    # check operating system\n    case \"$os_name\" in\n        \"Darwin\")\n            echo \"Operating System: macOS (Darwin)\"\n            export OS_VALID=true\n            ;;\n        \"Linux\")\n            echo \"Operating System: Linux\"\n            export OS_VALID=true\n            ;;\n        *)\n            echo \"Operating System: Unknown\"\n            export OS_VALID=false\n            ;;\n    esac\n    # check architecture\n    case \"$architecture\" in\n        x86_64)\n            echo \"System architecture: x86_64\"\n            export ARCHITECTURE_VALID=true\n            ;;\n        aarch64)\n            echo \"System architecture: aarch64\"\n            export ARCHITECTURE_VALID=true\n            ;;\n        *)\n            echo \"System architecture: Unknown ($architecture)\"\n            export ARCHITECTURE_VALID=false\n            ;;\n    esac\n\n    if ! ($OS_VALID && $ARCHITECTURE_VALID); then\n        echo \"Invalid system: ${OS_ARCHITECTURE}, exiting the environment.\";\n        exit\n    fi\n\n    echo \"Identified system as ${OS_ARCHITECTURE}.\"\n\n    # Set perl config env variables\n    export LC_ALL=C\n\n    # Set the repository root\n    export REPO_ROOT=$PWD\n\n    # Set the flox HOME to keep the user space clean\n    export HOME=\"${PWD}/.flox/lib/${USER}\"\n    mkdir -p $HOME\n    mkdir -p $HOME/.local\n\n    # Var for a local bin for the flox env\n    LOCAL_FLOX_BIN=$HOME/.local/bin\n\n    # Add the flox bin to the PATH\n    export PATH=\"$LOCAL_FLOX_BIN:$PATH\"\n\n    # Make the bin path if it doesn't exist\n    mkdir -p $LOCAL_FLOX_BIN\n\n    # Make the expected default XDG Base Directory Specification paths\n    # https://specifications.freedesktop.org/basedir-spec/latest/\n    mkdir -p $HOME/.local/share # -> make $XDG_DATA_HOME\n    mkdir -p $HOME/.config # -> $XDG_CONFIG_HOME\n    mkdir -p $HOME/.local/state # -> $XDG_STATE_HOME\n    mkdir -p $HOME/.cache # -> $XDG_CACHE_HOME\n    # Create and set the $XDG_RUNTIME_DIR\n    export XDG_RUNTIME_DIR=$HOME/runtime\n    mkdir -p $XDG_RUNTIME_DIR\n    chmod 700 $XDG_RUNTIME_DIR\n\n    # Configure rootless docker\n    export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock\n\n    # Copy the barebones podman policy.json\n    PODMAN_CFG=$HOME/.config/containers\n    PODMAN_CFG_FILE=$PODMAN_CFG/policy.json\n    mkdir -p $PODMAN_CFG\n    cp $REPO_ROOT/containers/policy.json $PODMAN_CFG\n\n    ### Conda ###\n\n    # conda install script\n    CONDA_SH=\"Miniconda3-latest-${OS_ARCHITECTURE}.sh\"\n\n    # conda install script path\n    CONDA_SH_PATH=$HOME/$CONDA_SH\n\n    # the conda specification file at the repo root\n    export CONDA_SPEC=$REPO_ROOT/conda_spec_file.txt\n    export CONDA_ENV=$REPO_ROOT/environment.yml\n\n    if [ ! -f $CONDA_SH_PATH ]; then\n        wget \"https://repo.anaconda.com/miniconda/${CONDA_SH}\" -O $CONDA_SH_PATH &&\n\tchmod 775 $CONDA_SH_PATH &&\n        bash $CONDA_SH_PATH -b -u -p $HOME/miniconda3\n        # init conda and reload the shell to activate\n        $HOME/miniconda3/bin/conda init bash\n\t# add a default umask to our .bashrc\n\techo \"umask 002\" >> $HOME/.bashrc\n        source $HOME/.bashrc\n        # add necessary channels\n        conda config --add channels bioconda\n        conda config --add channels qiime2\n        conda config --add channels conda-forge\n        conda config --set channel_priority strict\n        # if the conda environment file exists, then load the env\n        if [ -f $CONDA_ENV ]; then\n            # create a \"bio\" env to enter\n            conda env create -y -n bio -f $CONDA_ENV\n        else\n            # otherwise, just create the expected environment\n            echo \"Unable to create the 'bio' conda env. Likely, the environment.yml file was not found.\"\n            exit\n        fi\n    fi\n\n    # copy over the \"openbrowser\" script to user's bin\n    cp \"${PWD}/.flox/env/openbrowser\" \"${LOCAL_FLOX_BIN}/openbrowser\"\n\n    ### SIFT4G Annotator (available in conda, but only for linux, so we will install manually) ###\n\n    # name of the .jar file\n    SIFT4G_FILE=SIFT4G_Annotator.jar\n\n    # path to where we expect the .jar file to be downloaded\n    # NOTE: later in this file, we add an alias of \"sift4G\" to run this .jar file\n    export SIFT4G_PATH=\"${HOME}/${SIFT4G_FILE}\"\n\n    if [ ! -f $SIFT4G_PATH ]; then\n        wget \"https://github.com/pauline-ng/SIFT4G_Annotator/raw/master/${SIFT4G_FILE}\" -O $SIFT4G_PATH\n    fi\n\n"
     },
     "profile": {
       "common": "\n    # alias to run SIFT4G_Annotator.jar\n    alias sift4G=\"java -jar $SIFT4G_PATH\"\n\n    # alias to export the conda environment identically\n    alias export_conda_spec=\"conda list --explicit > $CONDA_SPEC\"\n\n    # alias to export the conda environment as a yaml file\n    alias export_conda_env=\"conda env export --from-history > $REPO_ROOT/environment.yml\"\n\n    # exports the spec text file and the environment.yml file\n    alias export_conda=\"export_conda_spec && export_conda_env\"\n\n    # enter the \"bio\" conda env\n    conda activate bio\n"
@@ -163,7 +173,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "perl5.40.0-CPAN-2.36",
+      "version": "2.36",
       "outputs_to_install": [
         "out"
       ],
@@ -194,7 +204,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "perl5.40.0-CPAN-2.36",
+      "version": "2.36",
       "outputs_to_install": [
         "out"
       ],
@@ -225,7 +235,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "perl5.40.0-CPAN-2.36",
+      "version": "2.36",
       "outputs_to_install": [
         "out"
       ],
@@ -256,7 +266,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "spades-4.0.0",
+      "version": "4.0.0",
       "outputs_to_install": [
         "out"
       ],
@@ -286,7 +296,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "spades-4.0.0",
+      "version": "4.0.0",
       "outputs_to_install": [
         "out"
       ],
@@ -316,7 +326,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "spades-4.0.0",
+      "version": "4.0.0",
       "outputs_to_install": [
         "out"
       ],
@@ -676,7 +686,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "unstable-2022-09-23",
+      "version": "2022-09-23",
       "outputs_to_install": [
         "out"
       ],
@@ -706,7 +716,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "unstable-2022-09-23",
+      "version": "2022-09-23",
       "outputs_to_install": [
         "out"
       ],
@@ -736,7 +746,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "unstable-2022-09-23",
+      "version": "2022-09-23",
       "outputs_to_install": [
         "out"
       ],
@@ -1036,7 +1046,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "wrapper-14-20241116",
+      "version": "14-20241116",
       "outputs_to_install": [
         "man",
         "out"
@@ -1069,7 +1079,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "wrapper-14-20241116",
+      "version": "14-20241116",
       "outputs_to_install": [
         "man",
         "out"
@@ -1102,7 +1112,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "wrapper-14-20241116",
+      "version": "14-20241116",
       "outputs_to_install": [
         "man",
         "out"
@@ -1968,7 +1978,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "openjdk-21.0.5+11",
+      "version": "21.0.5+11",
       "outputs_to_install": [
         "out"
       ],
@@ -1999,7 +2009,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "zulu-ca-jdk-21.0.4",
+      "version": "21.0.4",
       "outputs_to_install": [
         "out"
       ],
@@ -2029,7 +2039,7 @@
         "unstable"
       ],
       "unfree": false,
-      "version": "openjdk-21.0.5+11",
+      "version": "21.0.5+11",
       "outputs_to_install": [
         "out"
       ],
@@ -3373,6 +3383,156 @@
       ],
       "outputs": {
         "out": "/nix/store/nrmvi371jvg8r47xc5c2sxah1s2rk8wn-unzip-6.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "wslu",
+      "broken": false,
+      "derivation": "/nix/store/s4vk1ljdma50k97l5pix4d3rkc4xj1z7-wslu-4.1.4.drv",
+      "description": "Collection of utilities for Windows Subsystem for Linux",
+      "install_id": "wslu",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "wslu-4.1.4",
+      "pname": "wslu",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.1.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/8jmyn1k38kykjf8vmmy1z1wak4h528nc-wslu-4.1.4"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "wslu",
+      "broken": false,
+      "derivation": "/nix/store/f2pzpjfjah2yvcd4b89s9125jr040z07-wslu-4.1.4.drv",
+      "description": "Collection of utilities for Windows Subsystem for Linux",
+      "install_id": "wslu",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "wslu-4.1.4",
+      "pname": "wslu",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.1.4",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/4jrz4382ci95ngwhqgdmrc17f3zx23pa-wslu-4.1.4"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xdg-utils",
+      "broken": false,
+      "derivation": "/nix/store/8lqh7knlgpy5ncxkc0b6vji7gsz3l3c2-xdg-utils-1.2.1.drv",
+      "description": "Set of command line tools that assist applications with a variety of desktop integration tasks",
+      "install_id": "xdg-utils",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "xdg-utils-1.2.1",
+      "pname": "xdg-utils",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.2.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/v7nkmlr1qzfqaa2z2s6vrbwpnzwsvaz7-xdg-utils-1.2.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xdg-utils",
+      "broken": false,
+      "derivation": "/nix/store/qrcrr8r65hmcrpvp3r3qmw7dz2c2mf4g-xdg-utils-1.2.1.drv",
+      "description": "Set of command line tools that assist applications with a variety of desktop integration tasks",
+      "install_id": "xdg-utils",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "xdg-utils-1.2.1",
+      "pname": "xdg-utils",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.2.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/g21gackmmyak427ww4bb4mnsvc15kwx3-xdg-utils-1.2.1"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "xdg-utils",
+      "broken": false,
+      "derivation": "/nix/store/29m7iaz3bgs8ijpzr8skpyjgs9g3w3ld-xdg-utils-1.2.1.drv",
+      "description": "Set of command line tools that assist applications with a variety of desktop integration tasks",
+      "install_id": "xdg-utils",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "xdg-utils-1.2.1",
+      "pname": "xdg-utils",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.2.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/aivj7l8x78gkmm10hn0lxjwx9q30b6aa-xdg-utils-1.2.1"
       },
       "system": "aarch64-linux",
       "group": "toplevel",
