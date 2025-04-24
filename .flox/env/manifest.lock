@@ -28,6 +28,9 @@
       "bwa": {
         "pkg-path": "bwa"
       },
+      "coreutils-full": {
+        "pkg-path": "coreutils-full"
+      },
       "docker": {
         "pkg-path": "docker"
       },
@@ -752,6 +755,101 @@
       ],
       "outputs": {
         "out": "/nix/store/wsmbhpnfs1c1jsbj22yq2fvy63kajdqv-bwa-unstable-2022-09-23"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "coreutils-full",
+      "broken": false,
+      "derivation": "/nix/store/pd1x362ykqw36vnaqr58cx016bn28xk9-coreutils-full-9.5.drv",
+      "description": "GNU Core Utilities",
+      "install_id": "coreutils-full",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "coreutils-full-9.5",
+      "pname": "coreutils-full",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "9.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/gwsjrkr4zkq5wsmwfqsic0n4lsnxmash-coreutils-full-9.5-debug",
+        "info": "/nix/store/s7rjihsw3q9l0y4b3fmxk06s0z5387nr-coreutils-full-9.5-info",
+        "out": "/nix/store/imrcr31vjr7p62lgqh3k9p4j3vz1y5yf-coreutils-full-9.5"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "coreutils-full",
+      "broken": false,
+      "derivation": "/nix/store/bq0sa70hib8b90pycb5clj88xcwwp9vj-coreutils-full-9.5.drv",
+      "description": "GNU Core Utilities",
+      "install_id": "coreutils-full",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "coreutils-full-9.5",
+      "pname": "coreutils-full",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "9.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/2r75098x0gcfgbnpx05gn10afw9pzidr-coreutils-full-9.5-info",
+        "out": "/nix/store/8nqab7s0al6rwpf4hhd8071kvb65lfwm-coreutils-full-9.5"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "coreutils-full",
+      "broken": false,
+      "derivation": "/nix/store/rpprhf154kzg2j9azncazq0wr87dkbbg-coreutils-full-9.5.drv",
+      "description": "GNU Core Utilities",
+      "install_id": "coreutils-full",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=799ba5bffed04ced7067a91798353d360788b30d",
+      "name": "coreutils-full-9.5",
+      "pname": "coreutils-full",
+      "rev": "799ba5bffed04ced7067a91798353d360788b30d",
+      "rev_count": 747653,
+      "rev_date": "2025-02-04T14:46:40Z",
+      "scrape_date": "2025-02-05T00:30:07Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "9.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/r56fd7hxzp6sap2ifbvx6dszw352dqxp-coreutils-full-9.5-debug",
+        "info": "/nix/store/62qp60w0x66zr2q75wmrp7sz3k0ywd96-coreutils-full-9.5-info",
+        "out": "/nix/store/2hl06m6vrvj4cik4d8msc24wk5kvj645-coreutils-full-9.5"
       },
       "system": "aarch64-linux",
       "group": "toplevel",

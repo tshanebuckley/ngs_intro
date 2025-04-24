@@ -1,0 +1,9 @@
+bam
+data
+processed
+refgenome
+sam
+stats
+ucscref
+genome_assembly/work
+genome_assembly/.nextflow*

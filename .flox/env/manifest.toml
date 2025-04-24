@@ -54,6 +54,7 @@ gocryptfs.pkg-path = "gocryptfs"
 xdg-utils.pkg-path = "xdg-utils"
 wslu.pkg-path = "wslu"
 wslu.systems = ["aarch64-linux", "x86_64-linux"]
+coreutils-full.pkg-path = "coreutils-full"
 # hello.pkg-path = "hello"
 # nodejs = { version = "^20.15.1", pkg-path = "nodejs" }
 

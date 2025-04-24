@@ -4,3 +4,4 @@ venvs/flox/*
 !venvs/flox/.gitkeep
 .vscode
 Events.log
+nextflow/.nextflow*
